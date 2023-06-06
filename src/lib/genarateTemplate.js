@@ -1,6 +1,5 @@
-import { utils, writeFile } from 'xlsx';
+import ExcelJS from 'exceljs';
 
-// Group dataElements by indicators
 const generateTemplate = (indicators, dataElements) => {
   const groupedData = {};
   for (const indicator of indicators) {
@@ -14,29 +13,76 @@ const generateTemplate = (indicators, dataElements) => {
 
   const worksheetData = [];
   const firstRow = [];
-  const secondRow = [];
-  firstRow.push('');
-  secondRow.push('Reporting year');
+  const secondRow = {
+    ReportingYear: 'ReportingYear',
+  };
+  firstRow.push({
+    header: '',
+    key: 'ReportingYear',
+    width: 20,
+  });
+
   const row1 = Object.values(groupedData);
   for (const row of row1) {
     for (const element of row) {
-      firstRow.push({ t: 's', v: element.displayName, wch: 30 });
-      secondRow.push({ t: 's', v: element.code, wch: 30 });
-
-      secondRow.push(element.code);
+      firstRow.push({
+        header: element.displayName,
+        key: element.code,
+        width: 30,
+        wrapText: true,
+      });
+      secondRow[element.code] = element.code;
     }
   }
-  worksheetData.push(firstRow);
-  worksheetData.push(secondRow);
 
-  const workbook = utils.book_new();
-  const worksheet = utils.aoa_to_sheet(worksheetData);
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Data');
 
-  utils.book_append_sheet(workbook, worksheet, 'Data');
+  worksheet.columns = firstRow;
 
-  //   writeFile(workbook, 'data-import-template.xlsx');
+  worksheet.addRow(secondRow);
 
-  return workbook;
+  worksheet.getRow(1).eachCell(cell => {
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF012F6C' },
+    };
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: true,
+    };
+  });
+
+  worksheet.getRow(2).eachCell(cell => {
+    cell.font = { bold: true };
+    cell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: true,
+    };
+    cell.height = 20;
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFA7C6EC' },
+    };
+  });
+
+  worksheet.eachRow(row => {
+    row.eachCell(cell => {
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCFCDC8' } },
+        left: { style: 'thin', color: { argb: 'FFCFCDC8' } },
+        bottom: { style: 'thin', color: { argb: 'FFCFCDC8' } },
+        right: { style: 'thin', color: { argb: 'FFCFCDC8' } },
+      };
+    });
+  });
+
+  return worksheet;
 };
 
 export default generateTemplate;

@@ -3,7 +3,6 @@ import Card from '../components/Card';
 import instructions from '../data/instructions.json';
 import { createUseStyles } from 'react-jss';
 import generateTemplate from '../lib/genarateTemplate';
-import { writeFile } from 'xlsx';
 
 const useStyles = createUseStyles({
   title: {
@@ -64,15 +63,22 @@ export default function Template({ data }) {
               );
               const element = document.createElement('a');
 
-              element.href = writeFile(template, 'data-import-template.xlsx');
-              element.setAttribute('download', 'data-import-template.xlsx');
+              template.workbook.xlsx.writeBuffer().then(data => {
+                const blob = new Blob([data], {
+                  type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                });
+                const url = window.URL.createObjectURL(blob);
+                element.setAttribute('href', url);
 
-              document.body.appendChild(element);
-              element.click();
+                element.setAttribute('download', 'data-import-template.xlsx');
 
-              setTimeout(() => {
-                document.body.removeChild(element);
-              }, 1000);
+                document.body.appendChild(element);
+                element.click();
+
+                setTimeout(() => {
+                  document.body.removeChild(element);
+                }, 1000);
+              });
             }}
           >
             Download Template
