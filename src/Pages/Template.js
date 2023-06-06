@@ -3,6 +3,7 @@ import Card from '../components/Card';
 import instructions from '../data/instructions.json';
 import { createUseStyles } from 'react-jss';
 import generateTemplate from '../lib/genarateTemplate';
+import { writeFile } from 'xlsx';
 
 const useStyles = createUseStyles({
   title: {
@@ -63,9 +64,9 @@ export default function Template({ data }) {
               );
               const element = document.createElement('a');
 
-              element.href = template;
+              element.href = writeFile(template, 'data-import-template.xlsx');
+              element.setAttribute('download', 'data-import-template.xlsx');
 
-              element.download;
               document.body.appendChild(element);
               element.click();
 

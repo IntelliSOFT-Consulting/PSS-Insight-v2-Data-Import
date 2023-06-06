@@ -1,8 +1,7 @@
 import { utils, writeFile } from 'xlsx';
 
+// Group dataElements by indicators
 const generateTemplate = (indicators, dataElements) => {
-  console.log('indicators', indicators);
-  console.log('dataElements', dataElements);
   const groupedData = {};
   for (const indicator of indicators) {
     groupedData[indicator?.code] = dataElements?.filter(
@@ -35,7 +34,7 @@ const generateTemplate = (indicators, dataElements) => {
 
   utils.book_append_sheet(workbook, worksheet, 'Data');
 
-  writeFile(workbook, 'data-import-template.xlsx');
+  //   writeFile(workbook, 'data-import-template.xlsx');
 
   return workbook;
 };
