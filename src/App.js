@@ -4,8 +4,8 @@ import i18n from '@dhis2/d2-i18n';
 import { createUseStyles } from 'react-jss';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Layout from './Layouts/Layout';
-import 'handsontable/dist/handsontable.full.min.css';
-// import 'sheet-happens/dist/index.css';
+import './custom.css';
+import 'sheet-happens/dist/index.css';
 
 const useStyles = createUseStyles({
   '@global': {

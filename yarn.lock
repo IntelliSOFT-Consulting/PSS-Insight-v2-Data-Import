@@ -2172,6 +2172,11 @@
   resolved "https://registry.yarnpkg.com/@handsontable/react/-/react-12.4.0.tgz#36e69bbab8bef6a27989ae7dcf9c56ca08235a55"
   integrity sha512-qCjZq5TuJTvYKIl3B111rw5X3vlmNckW7520izSJKdDOVxlPr6aLCr13yYL+0eFtBIMYl6M3logzkFFh7z72ew==
 
+"@heroicons/react@^2.0.18":
+  version "2.0.18"
+  resolved "https://registry.yarnpkg.com/@heroicons/react/-/react-2.0.18.tgz#f80301907c243df03c7e9fd76c0286e95361f7c1"
+  integrity sha512-7TyMjRrZZMBPa+/5Y8lN0iyvUU/01PeMGX2+RE7cQWpEUIcb4QotzUObFkJDejj/HUH4qjP/eQ0gzzKs2f+6Yw==
+
 "@humanwhocodes/config-array@^0.11.8":
   version "0.11.8"
   resolved "https://registry.npmjs.org/@humanwhocodes/config-array/-/config-array-0.11.8.tgz"

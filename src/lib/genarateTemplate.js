@@ -11,14 +11,13 @@ const generateTemplate = (indicators, dataElements) => {
     );
   }
 
-  const worksheetData = [];
   const firstRow = [];
   const secondRow = {
-    ReportingYear: 'ReportingYear',
+    'Reporting Year': 'Reporting Year',
   };
   firstRow.push({
     header: '',
-    key: 'ReportingYear',
+    key: 'Reporting Year',
     width: 20,
   });
 

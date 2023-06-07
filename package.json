@@ -16,6 +16,7 @@
   "dependencies": {
     "@dhis2/app-runtime": "^3.9.3",
     "@handsontable/react": "^12.4.0",
+    "@heroicons/react": "^2.0.18",
     "antd": "^5.5.1",
     "exceljs": "^4.3.0",
     "handsontable": "^12.4.0",
