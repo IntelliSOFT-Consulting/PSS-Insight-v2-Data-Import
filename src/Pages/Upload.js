@@ -65,8 +65,10 @@ export default function UploadTemplate({ data: { dataElements } }) {
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const datas = utils.sheet_to_json(ws, { header: 1 });
-
-        if (datas[1][0] !== 'Reporting Year') {
+        if (
+          datas[1][1] !== 'Reporting Year' ||
+          datas[1][0] !== 'Organisation Unit'
+        ) {
           setAlert({
             status: 'error',
             message: 'Invalid template file',

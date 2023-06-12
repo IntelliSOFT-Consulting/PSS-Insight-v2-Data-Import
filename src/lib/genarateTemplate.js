@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 
-const generateTemplate = (indicators, dataElements) => {
+const generateTemplate = (indicators, dataElements, orgUnits) => {
   const groupedData = {};
   for (const indicator of indicators) {
     groupedData[indicator?.code] = dataElements?.filter(
@@ -13,8 +13,15 @@ const generateTemplate = (indicators, dataElements) => {
 
   const firstRow = [];
   const secondRow = {
+    'Organisation Unit': 'Organisation Unit',
     'Reporting Year': 'Reporting Year',
   };
+
+  firstRow.push({
+    header: '',
+    key: 'Organisation Unit',
+    width: 20,
+  });
   firstRow.push({
     header: '',
     key: 'Reporting Year',
@@ -70,6 +77,12 @@ const generateTemplate = (indicators, dataElements) => {
     };
   });
 
+  const countries = orgUnits.map(orgUnit => `${orgUnit.name}`);
+  const column = 'A';
+  const startRow = 3;
+  const endRow = 1000;
+
+
   worksheet.eachRow(row => {
     row.eachCell(cell => {
       cell.border = {
@@ -80,6 +93,29 @@ const generateTemplate = (indicators, dataElements) => {
       };
     });
   });
+  const listSheet = workbook.addWorksheet('Sheet2');
+  listSheet.protect('', { sheet: true });
+  listSheet.state = 'veryHidden';
+  countries.forEach((value, index) => {
+    const cell = listSheet.getCell(`A${index + 1}`);
+    cell.value = value;
+  });
+
+  const validation = {
+    type: 'list',
+    allowBlank: false,
+    formulae: [`=Sheet2!$A$1:$A$${countries.length}`],
+    showErrorMessage: true,
+    errorStyle: 'error',
+    errorTitle: 'Invalid Country',
+    error: 'Please select a country from the list',
+  };
+
+  for (let i = startRow; i <= endRow; i++) {
+    const cell = worksheet.getCell(`${column}${i}`);
+    cell.dataValidation = validation;
+  }
+
 
   return worksheet;
 };

@@ -59,7 +59,8 @@ export default function Template({ data }) {
             onClick={() => {
               const template = generateTemplate(
                 data.indicators.indicators,
-                data.dataElements.dataElements
+                data.dataElements.dataElements,
+                data.orgUnits.organisationUnits
               );
               const element = document.createElement('a');
 

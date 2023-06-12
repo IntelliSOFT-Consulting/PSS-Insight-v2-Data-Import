@@ -41,6 +41,15 @@ const query = {
       pageSize: 5000,
     }),
   },
+  // get organization units
+  orgUnits: {
+    resource: 'organisationUnits.json',
+    params: ({ page }) => ({
+      fields: 'id,name,level',
+      paging: 'false',
+      level: 3,
+    }),
+  },
 };
 
 const MyApp = () => {

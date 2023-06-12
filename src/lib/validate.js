@@ -26,7 +26,7 @@ export const dataToJson = (data, dataElements) => {
       } else
         obj[columns[index]] = {
           row: i + 3,
-          column: descriptions[i + 2],
+          column: descriptions[index],
           response: item,
           indicator: dataElements.find(
             element => element.code === columns[index]
@@ -42,7 +42,9 @@ const findDuplicatedYears = years => {
   const yearCounts = {};
   const duplicatedYears = [];
 
-  for (const { row, response } of years) {
+  const validYears = years.filter(year => year?.response);
+
+  for (const { row, response } of validYears) {
     if (yearCounts[response]) {
       duplicatedYears.push({ row, response });
     } else {
@@ -50,7 +52,7 @@ const findDuplicatedYears = years => {
     }
   }
 
-  return years.filter(year =>
+  return validYears.filter(year =>
     duplicatedYears.map(item => item.response).includes(year.response)
   );
 };
@@ -71,11 +73,11 @@ export const getYearErrors = jsonData => {
     });
   }
 
-  const emptyYears = years.filter(year => !year.response);
+  const emptyYears = years.filter(year => !year?.response);
   if (emptyYears.length > 0) {
     emptyYears.forEach(year => {
       yearErrors.push([
-        `Row No. ${year.row}`,
+        `Row No. ${year?.row}`,
         `Reporting Year`,
         'Year must be not be empty and must be in the format YYYY.',
       ]);
