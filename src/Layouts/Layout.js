@@ -46,17 +46,28 @@ export default function MainLayout({ data }) {
 
   const sideLinks = [
     {
-      label: createLink('Data Import', '/'),
+      label: 'Data Import/Export',
+      key: 'Data Import/Export',
+    },
+    {
+      label: 'Data Import',
       key: 'Data Import',
+      children: [
+        {
+          label: createLink('Data Import Template', '/'),
+          key: 'template',
+        },
+        {
+          label: createLink('Upload Data', '/upload'),
+          key: 'uploadData',
+        },
+      ],
     },
     {
-      label: createLink('Download Data Import Template', '/'),
-      key: 'template',
-    },
-    {
-      label: createLink('Upload Data', '/upload'),
-      key: 'uploadData',
-    },
+      label: createLink('Data Export', '/export'),
+      key: 'Data Export',
+
+    }
   ];
 
   return (

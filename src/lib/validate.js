@@ -27,7 +27,7 @@ export const dataToJson = (data, dataElements) => {
         obj[columns[index]] = {
           row: i + 3,
           column: descriptions[index],
-          response: item,
+          response: item == 'Yes' ? true : item == 'No' ? false : item,
           indicator: dataElements.find(
             element => element.code === columns[index]
           )?.code,
@@ -103,10 +103,7 @@ export const getTypeErrors = (jsonData, dataElements) => {
               ]);
             }
           } else if (dataElement.valueType === 'BOOLEAN') {
-            if (
-              value.response &&
-              !['yes', 'no'].includes(value.response.toLowerCase())
-            ) {
+            if (value.response && ![true, false].includes(value.response)) {
               typeErrors.push([
                 `Row No. ${value.row}`,
                 value.column,
