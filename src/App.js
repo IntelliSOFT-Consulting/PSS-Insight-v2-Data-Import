@@ -20,7 +20,11 @@ const useStyles = createUseStyles({
 
 const query = {
   me: {
-    resource: 'me',
+    resource: 'me.json',
+    params: {
+      fields:
+        'id,username,displayName,userCredentials[userRoles[id]],organisationUnits[id]',
+    },
   },
   indicators: {
     resource: 'indicators.json',

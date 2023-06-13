@@ -1,26 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../components/Card';
 import instructions from '../data/instructions.json';
 import { createUseStyles } from 'react-jss';
 import generateTemplate from '../lib/genarateTemplate';
+import { Button } from 'antd';
 
 const useStyles = createUseStyles({
   title: {
     fontSize: '16px',
   },
-  button: {
-    backgroundColor: '#002F6C',
-    color: 'white',
-    padding: '10px 20px',
-    borderRadius: '5px',
-    border: 'none',
-    cursor: 'pointer',
-    margin: '1rem 0px',
-    '&:hover': {
-      backgroundColor: '#005DA5',
-      color: 'white',
-    },
-  },
+
   instructions: {
     margin: '2rem 0px',
     fontSize: '15px',
@@ -35,10 +24,25 @@ const useStyles = createUseStyles({
       },
     },
   },
+  download: {
+    '& .ant-btn': {
+      backgroundColor: '#002F6C !important',
+      color: 'white !important',
+      borderRadius: '5px',
+      border: 'none',
+      cursor: 'pointer',
+      margin: '1rem 0px',
+      '&:hover': {
+        backgroundColor: '#005DA5 !important',
+        color: 'white !important',
+      },
+    },
+  },
 });
 
 export default function Template({ data }) {
   const classes = useStyles();
+  const [loading, setLoading] = useState(false);
 
   return (
     <Card title='DOWNLOAD DATA IMPORT TEMPLATE'>
@@ -52,15 +56,16 @@ export default function Template({ data }) {
         ))}
       </div>
       {data?.indicators && (
-        <div>
+        <div className={classes.download}>
           <p>National Master Template Version</p>
-          <button
+          <Button
             className={classes.button}
             onClick={() => {
+              setLoading(true);
               const template = generateTemplate(
                 data.indicators.indicators,
                 data.dataElements.dataElements,
-                data.orgUnits.organisationUnits
+                data.me.organisationUnits
               );
               const element = document.createElement('a');
 
@@ -79,11 +84,13 @@ export default function Template({ data }) {
                 setTimeout(() => {
                   document.body.removeChild(element);
                 }, 1000);
+                setLoading(false);
               });
             }}
+            loading={loading}
           >
             Download Template
-          </button>
+          </Button>
         </div>
       )}
     </Card>
