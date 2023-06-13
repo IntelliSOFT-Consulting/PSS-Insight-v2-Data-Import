@@ -6,6 +6,10 @@ import Sheet from 'sheet-happens';
 import { read, utils } from 'xlsx';
 import Notification from '../components/Notification';
 import { dataToJson, getErrors } from '../lib/validate';
+import { createPayload } from '../lib/payload';
+import { useDataMutation } from '@dhis2/app-runtime';
+import { format } from 'date-fns';
+import Loader from '../components/Loader';
 
 const useStyles = createUseStyles({
   button: {
@@ -40,13 +44,15 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function UploadTemplate({ data: { dataElements } }) {
+export default function UploadTemplate({
+  data: { dataElements, me, programs },
+}) {
   const [file, setFile] = useState(null);
   const [data, setData] = useState(null);
   const [errors, setErrors] = useState([['Row No.', 'Column', 'Error']]);
   const [alert, setAlert] = useState(null);
   const [valid, setValid] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [jsonDatas, setJsonDatas] = useState(null);
 
   const classes = useStyles();
   const uploadFile = ({ file, onSuccess, onError, onProgress }) => {
@@ -65,10 +71,7 @@ export default function UploadTemplate({ data: { dataElements } }) {
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const datas = utils.sheet_to_json(ws, { header: 1 });
-        if (
-          datas[1][1] !== 'Reporting Year' ||
-          datas[1][0] !== 'Organisation Unit'
-        ) {
+        if (datas[1][0] !== 'Reporting Year') {
           setAlert({
             status: 'error',
             message: 'Invalid template file',
@@ -104,6 +107,7 @@ export default function UploadTemplate({ data: { dataElements } }) {
 
   const handleValidate = () => {
     const jsonData = dataToJson(data, dataElements?.dataElements);
+    setJsonDatas(jsonData);
     const validationErrors = getErrors(jsonData, dataElements?.dataElements);
 
     if (validationErrors.length > 0) {
@@ -127,7 +131,6 @@ export default function UploadTemplate({ data: { dataElements } }) {
         setAlert(null);
       }, 2000);
     }
-    setLoading(false);
   };
 
   const deepFlatten = arr =>
@@ -153,20 +156,72 @@ export default function UploadTemplate({ data: { dataElements } }) {
     return [100, lengthToPixels(longest2), lengthToPixels(longest3)];
   };
 
+  const mutation = {
+    resource: 'tracker',
+    type: 'create',
+    params: _data => ({
+      async: 'false',
+    }),
+
+    data: _data => {
+      return { events: Object.values(_data) };
+    },
+  };
+
+  const [mutate, { loading: mutationLoading, error: mutationError }] =
+    useDataMutation(mutation, {
+      onComplete: _data => {
+        const { created, updated, ignored } = _data.stats;
+        setAlert({
+          status: 'success',
+          message: `Successfully imported ${created} events and updated ${updated} events. ${ignored} events were ignored.`,
+          onClose: () => setAlert(null),
+        });
+        console.log('_data', _data);
+        setData(null);
+        setErrors([['Row No.', 'Column', 'Error']]);
+        setFile(null);
+        setJsonDatas(null);
+        setValid(false);
+      },
+      onError: error => {
+        setAlert({
+          status: 'error',
+          message: 'An error occurred while importing data',
+          onClose: () => setAlert(null),
+        });
+      },
+    });
+
+  const handleSubmit = () => {
+    const payload = createPayload(
+      jsonDatas,
+      dataElements?.dataElements,
+      me?.organisationUnits[0]?.id,
+      programs?.programs
+    );
+
+    mutate(payload);
+  };
+
   const footer = (
     <div className={classes.footer}>
       <Button
         type='primary'
         className={classes.button}
         onClick={() => {
-          setLoading(true);
           handleValidate();
         }}
-        disabled={!data || loading || data?.length < 3 || errors.length > 1}
+        disabled={!data || data?.length < 3 || errors.length > 1}
       >
         Validate
       </Button>
-      <Button type='primary' disabled={!valid} className={classes.button}>
+      <Button
+        type='primary'
+        disabled={!valid}
+        className={classes.button}
+        onClick={handleSubmit}
+      >
         Submit
       </Button>
     </div>
@@ -182,7 +237,8 @@ export default function UploadTemplate({ data: { dataElements } }) {
         </Upload>
       </div>
       <>
-        {data && errors.length === 1 && (
+        {mutationLoading && <Loader />}
+        {!mutationLoading && data && errors.length === 1 && (
           <Sheet
             id='Data'
             sourceData={data}

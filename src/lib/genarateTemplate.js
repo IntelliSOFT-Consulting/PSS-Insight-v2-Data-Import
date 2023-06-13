@@ -13,15 +13,9 @@ const generateTemplate = (indicators, dataElements, orgUnits) => {
 
   const firstRow = [];
   const secondRow = {
-    'Organisation Unit': 'Organisation Unit',
     'Reporting Year': 'Reporting Year',
   };
 
-  firstRow.push({
-    header: '',
-    key: 'Organisation Unit',
-    width: 20,
-  });
   firstRow.push({
     header: '',
     key: 'Reporting Year',
@@ -77,12 +71,6 @@ const generateTemplate = (indicators, dataElements, orgUnits) => {
     };
   });
 
-  const countries = orgUnits.map(orgUnit => `${orgUnit.name}`);
-  const column = 'A';
-  const startRow = 3;
-  const endRow = 1000;
-
-
   worksheet.eachRow(row => {
     row.eachCell(cell => {
       cell.border = {
@@ -93,29 +81,27 @@ const generateTemplate = (indicators, dataElements, orgUnits) => {
       };
     });
   });
-  const listSheet = workbook.addWorksheet('Sheet2');
-  listSheet.protect('', { sheet: true });
-  listSheet.state = 'veryHidden';
-  countries.forEach((value, index) => {
-    const cell = listSheet.getCell(`A${index + 1}`);
-    cell.value = value;
-  });
 
-  const validation = {
-    type: 'list',
-    allowBlank: false,
-    formulae: [`=Sheet2!$A$1:$A$${countries.length}`],
-    showErrorMessage: true,
-    errorStyle: 'error',
-    errorTitle: 'Invalid Country',
-    error: 'Please select a country from the list',
-  };
+  const column = 'A';
+  const startRow = 3;
+  const endRow = 1000;
 
   for (let i = startRow; i <= endRow; i++) {
+    const validation = {
+      type: 'custom',
+      allowBlank: false,
+      formulae: [
+        `=AND(ISNUMBER(${column}${i}),${column}${i}>=1900,${column}${i}<=YEAR(TODAY()))`,
+      ],
+      showErrorMessage: true,
+      errorStyle: 'error',
+      errorTitle: 'Invalid Year',
+      error:
+        'Please enter a valid year (data entry for future years are not allowed)',
+    };
     const cell = worksheet.getCell(`${column}${i}`);
     cell.dataValidation = validation;
   }
-
 
   return worksheet;
 };

@@ -41,13 +41,12 @@ const query = {
       pageSize: 5000,
     }),
   },
-  // get organization units
-  orgUnits: {
-    resource: 'organisationUnits.json',
+  programs: {
+    resource: 'programs.json',
     params: ({ page }) => ({
-      fields: 'id,name,level',
-      paging: 'false',
-      level: 3,
+      order: 'code:asc, formName:asc, valueType:asc, id:asc',
+      fields: 'id,code,formName,valueType,displayName,programStages[id]',
+      pageSize: 5000,
     }),
   },
 };
