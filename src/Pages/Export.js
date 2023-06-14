@@ -18,6 +18,8 @@ const useStyles = createUseStyles({
   '@global': {
     '.ant-table': {
       margin: '1rem 0 !important',
+      width: '100% !important',
+      overflow: 'auto !important',
     },
     '.ant-table-thead': {
       '& .ant-table-cell': {
