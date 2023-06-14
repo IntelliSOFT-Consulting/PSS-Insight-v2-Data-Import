@@ -8,7 +8,6 @@ import Notification from '../components/Notification';
 import { dataToJson, getErrors } from '../lib/validate';
 import { createPayload } from '../lib/payload';
 import { useDataMutation } from '@dhis2/app-runtime';
-import { format } from 'date-fns';
 import Loader from '../components/Loader';
 
 const useStyles = createUseStyles({

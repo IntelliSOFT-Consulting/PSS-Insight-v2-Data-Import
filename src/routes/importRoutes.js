@@ -1,5 +1,6 @@
 import Template from '../Pages/Template';
 import Upload from '../Pages/Upload';
+import Export from '../Pages/Export';
 
 const routes = [
   {
@@ -9,6 +10,10 @@ const routes = [
   {
     path: '/upload',
     element: Upload,
+  },
+  {
+    path: '/export',
+    element: Export,
   },
 ];
 

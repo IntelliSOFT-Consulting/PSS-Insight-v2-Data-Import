@@ -26,6 +26,9 @@ const useStyles = createUseStyles({
   },
   cardBody: {
     padding: '10px 1.5rem',
+    width: 'calc(100% - 3rem)',
+    overflow: 'auto',
+    margin: '0 auto',
   },
   footer: {
     padding: '20px 1.5rem',
