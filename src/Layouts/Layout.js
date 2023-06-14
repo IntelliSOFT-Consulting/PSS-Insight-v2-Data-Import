@@ -93,7 +93,6 @@ export default function MainLayout({ data }) {
       <Layout
         style={{
           padding: '0 24px 24px',
-
         }}
       >
         <Content
@@ -101,7 +100,7 @@ export default function MainLayout({ data }) {
             padding: 24,
             margin: 0,
             minHeight: 280,
-            maxWidth: 'calc(100vw - 200px)'
+            maxWidth: 'calc(100vw - 248px)',
           }}
         >
           <Routes>

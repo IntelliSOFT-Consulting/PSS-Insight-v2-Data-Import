@@ -1,11 +1,4 @@
-import { da } from 'date-fns/locale';
-
-export const formatDataElements = (indicators, dataElements, events) => {
-  const header1 = [''];
-  const header2 = ['Reporting Year'];
-  const header3 = [''];
-
-  const data = [];
+const groupData = (indicators, dataElements) => {
   const groupedData = {};
   for (const indicator of indicators) {
     groupedData[indicator?.code] = dataElements?.filter(
@@ -15,6 +8,17 @@ export const formatDataElements = (indicators, dataElements, events) => {
         !element.code?.includes('Uploads')
     );
   }
+
+  return groupedData;
+};
+
+export const formatDataElements = (indicators, dataElements, events) => {
+  const header1 = [''];
+  const header2 = ['Reporting Year'];
+  const header3 = [''];
+
+  const data = [];
+  const groupedData = groupData(indicators, dataElements);
 
   const headers = Object.values(groupedData);
   for (const header of headers) {
@@ -58,15 +62,7 @@ export const formatDataElements = (indicators, dataElements, events) => {
 };
 
 export const formatColumns = (indicators, dataElements) => {
-  const groupedData = {};
-  for (const indicator of indicators) {
-    groupedData[indicator?.code] = dataElements?.filter(
-      element =>
-        element.code?.startsWith(indicator.code) &&
-        !element.code?.includes('Comments') &&
-        !element.code?.includes('Uploads')
-    );
-  }
+  const groupedData = groupData(indicators, dataElements);
 
   const headers = Object.values(groupedData).flat();
 
@@ -110,4 +106,84 @@ export const formatColumns = (indicators, dataElements) => {
   });
 
   return columns;
+};
+
+export const createExport = (indicators, dataElements, events) => {
+  try {
+    const header1 = [
+      {
+        header: '',
+        key: 'Reporting Year',
+        width: 20,
+        wrapText: true,
+      },
+    ];
+    const header2 = ['Reporting Year'];
+    const header3 = [''];
+
+    const data = [];
+    const groupedData = groupData(indicators, dataElements);
+
+    const headers = Object.values(groupedData).flat();
+
+    for (const element of headers) {
+      header1.push([
+        {
+          header: element.displayName,
+          key: element.code,
+          width: 20,
+          wrapText: true,
+        },
+        {
+          header: '',
+          key: element.code,
+          width: 20,
+          wrapText: true,
+        },
+        {
+          header: '',
+          key: element.code,
+          width: 20,
+          wrapText: true,
+        },
+      ]);
+      header2.push([element.code, '', '']);
+      header3.push('value', 'National Benchmark', 'International Benchmark');
+    }
+
+    const flatHeaders = headers.flat();
+    const headersText = flatHeaders.map(header => header.id);
+    for (const event of events) {
+      const dataValues = [];
+      for (const dataValue of event.dataValues) {
+        const index = headersText.indexOf(dataValue.dataElement);
+
+        // const dataItem = flatHeaders[index];
+
+        if (index > -1) {
+          dataValues[index] = [
+            dataValue.value === 'true'
+              ? 'Yes'
+              : dataValue.value === 'false'
+              ? 'No'
+              : dataValue.value,
+            null,
+            null,
+          ];
+          // fill in the rest of the array with nulls
+          for (let i = 0; i < headersText.length; i++) {
+            if (!dataValues[i]) {
+              dataValues[i] = [null, null, null];
+            }
+          }
+        }
+      }
+
+      data.push([event.occurredAt.substring(0, 4), ...dataValues.flat()]);
+    }
+
+    return [header1.flat(), header2.flat(), header3, ...data];
+  } catch (error) {
+    console.log('error: ', error);
+  }
 };

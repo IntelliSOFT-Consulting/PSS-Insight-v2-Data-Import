@@ -1,21 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useDataQuery } from '@dhis2/app-runtime';
 import { Button } from 'antd';
-import { formatColumns, formatData, formatDataElements } from '../lib/export';
-import { read, utils, writeFileXLSX } from 'xlsx';
+import {
+  formatColumns,
+  formatData,
+  formatDataElements,
+  createExport,
+} from '../lib/export';
+// import { read, utils, writeFileXLSX } from 'xlsx';
 import 'handsontable/dist/handsontable.full.min.css';
-import { HotTable } from '@handsontable/react';
 import { registerAllModules } from 'handsontable/registry';
 import { DatePicker, Form, Table } from 'antd';
 import moment from 'moment';
 import CardItem from '../components/Card';
 import { createUseStyles } from 'react-jss';
-import { da } from 'date-fns/locale';
+import { CloudDownloadOutlined } from '@ant-design/icons';
+import { saveAs } from 'file-saver';
+import ExcelJS from 'exceljs';
 
 const { RangePicker } = DatePicker;
 
 const useStyles = createUseStyles({
   '@global': {
+    '.ant-btn-primary': {
+      backgroundColor: '#012f6c',
+      '&:hover': {
+        backgroundColor: '#0067B9 !important',
+      },
+    },
     '.ant-table': {
       margin: '1rem 0 !important',
       width: '100% !important',
@@ -50,6 +62,14 @@ const useStyles = createUseStyles({
       },
     },
   },
+
+  exportHeader: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
   exportTable: {
     width: '100%',
     overflow: 'auto',
@@ -62,6 +82,7 @@ export default function Export({
   data: { dataElements, indicators, me, programs },
 }) {
   const [data, setData] = useState(null);
+  const [filteredData, setFilteredData] = useState(null);
   const [headers, setHeaders] = useState(null);
   const [loading, setLoading] = useState(false);
   const [period, setPeriod] = useState(null);
@@ -69,7 +90,6 @@ export default function Export({
   const classes = useStyles();
 
   const query = {
-    // query for all tracker events
     events: {
       resource: 'tracker/events',
       params: ({ page }) => ({
@@ -92,6 +112,8 @@ export default function Export({
         return eventYear >= start && eventYear <= end;
       });
 
+      setFilteredData(selectedEvents);
+
       const formattedDataElements = formatDataElements(
         indicators?.indicators,
         dataElements?.dataElements,
@@ -104,8 +126,6 @@ export default function Export({
     }
   }, [eventData, dataElements, period]);
 
-  console.log('headers', headers);
-  console.log('data', data);
   const handleFetch = values => {
     if (eventData && dataElements) {
       const [start, end] = values?.period;
@@ -118,9 +138,116 @@ export default function Export({
   };
 
   const handleDownload = () => {
-    setLoading(true);
-    data.download('tracker-data.xlsx');
-    setLoading(false);
+    // create sheet using headers and data and xlsx
+    if (filteredData && indicators && dataElements) {
+      const exportPayload = createExport(
+        indicators?.indicators,
+        dataElements?.dataElements,
+        filteredData
+      );
+
+      const cols = exportPayload[0];
+      const rows = exportPayload.slice(1);
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Data');
+
+      worksheet.columns = cols;
+
+      worksheet.addRows(rows);
+
+      const border = {
+        top: { style: 'thin', color: { argb: 'FFF0F0F0' } },
+        left: { style: 'thin', color: { argb: 'FFF0F0F0' } },
+        bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } },
+        right: { style: 'thin', color: { argb: 'FFF0F0F0' } },
+      };
+
+      const darkBlue = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF012F6C' },
+      };
+
+      ['A1', 'A2', 'A3'].forEach(cell => {
+        worksheet.getCell(cell).fill = darkBlue;
+      });
+
+      worksheet.mergeCells('A1:A3');
+      // give the merged A1:A3 cell a value and background color
+      worksheet.getCell('A1').value = 'Reporting Year';
+      worksheet.getCell('A3').fill = worksheet.getCell('A1').font = {
+        bold: true,
+        color: { argb: 'FFFFFFFF' },
+      };
+      worksheet.getCell('A1').alignment = {
+        vertical: 'middle',
+        horizontal: 'center',
+        wrapText: true,
+      };
+
+      worksheet.getRow(1).eachCell(cell => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF012F6C' },
+        };
+        cell.colSpan = 3;
+        cell.border = border;
+        cell.width = 30;
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center',
+          wrapText: true,
+        };
+      });
+
+      let colIndex = 2;
+      while (colIndex <= cols.length) {
+        worksheet.mergeCells(1, colIndex, 1, colIndex + 2);
+        worksheet.mergeCells(2, colIndex, 2, colIndex + 2);
+        colIndex += 3;
+      }
+
+      worksheet.getRow(2).eachCell(cell => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFA7C6EC' },
+        };
+        cell.border = border;
+        cell.font = { bold: true, color: { argb: 'FF000000' } };
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center',
+          wrapText: true,
+        };
+      });
+
+      worksheet.getRow(3).eachCell(cell => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFA7C6EC' },
+        };
+        cell.border = border;
+        cell.width = 30;
+        cell.font = { bold: true, color: { argb: 'FF000000' } };
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center',
+          wrapText: true,
+        };
+      });
+
+      workbook.xlsx.writeBuffer().then(buffer => {
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        saveAs(blob, 'export.xlsx');
+      });
+    }
   };
 
   const columns = formatColumns(
@@ -128,12 +255,29 @@ export default function Export({
     dataElements?.dataElements
   );
 
+  const header = (
+    <div className={classes.exportHeader}>
+      <h5>EXPORT DATA</h5>
+      {data && (
+        <Button
+          icon={<CloudDownloadOutlined />}
+          size='small'
+          onClick={handleDownload}
+          loading={loading}
+        >
+          Download
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <div className={classes.root}>
-      <CardItem title='EXPORT DATA'>
+      <CardItem title={header}>
         <Form layout='inline' onFinish={handleFetch}>
           <Form.Item name='period'>
             <RangePicker
+              size='large'
               picker='year'
               disabledDate={current =>
                 current && current > moment().endOf('year')
@@ -146,6 +290,7 @@ export default function Export({
               htmlType='submit'
               loading={loadingData}
               disabled={loadingData}
+              size='large'
             >
               Filter
             </Button>
