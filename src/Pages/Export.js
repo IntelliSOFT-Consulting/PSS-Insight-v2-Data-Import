@@ -32,11 +32,13 @@ const useStyles = createUseStyles({
       margin: '1rem 0 !important',
       width: '100% !important',
       overflow: 'auto !important',
+      fontSize: '11px !important',
+      borderRadius: '0px !important',
     },
     '.ant-table-thead': {
       '& .ant-table-cell': {
         whiteSpace: 'pre-wrap',
-        fontSize: '12px !important',
+        fontSize: '11px !important',
         fontWeight: '500 !important',
         width: '100% !important',
         textAlign: 'center !important',
@@ -169,22 +171,8 @@ export default function Export({
         fgColor: { argb: 'FF012F6C' },
       };
 
-      ['A1', 'A2', 'A3'].forEach(cell => {
-        worksheet.getCell(cell).fill = darkBlue;
-      });
-
       worksheet.mergeCells('A1:A3');
-      // give the merged A1:A3 cell a value and background color
       worksheet.getCell('A1').value = 'Reporting Year';
-      worksheet.getCell('A3').fill = worksheet.getCell('A1').font = {
-        bold: true,
-        color: { argb: 'FFFFFFFF' },
-      };
-      worksheet.getCell('A1').alignment = {
-        vertical: 'middle',
-        horizontal: 'center',
-        wrapText: true,
-      };
 
       worksheet.getRow(1).eachCell(cell => {
         cell.fill = {
@@ -238,6 +226,14 @@ export default function Export({
           vertical: 'middle',
           horizontal: 'center',
           wrapText: true,
+        };
+      });
+
+      ['A1', 'A2', 'A3'].forEach(cell => {
+        worksheet.getCell(cell).fill = darkBlue;
+        worksheet.getCell(cell).font = {
+          bold: true,
+          color: { argb: 'FFFFFFFF' },
         };
       });
 

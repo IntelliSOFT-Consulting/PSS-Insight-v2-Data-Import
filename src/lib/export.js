@@ -69,29 +69,27 @@ export const formatColumns = (indicators, dataElements) => {
   const columns = headers.map(header => {
     return {
       title: header.displayName,
+      key: header.code,
+      width: 300,
       children: [
         {
           title: header.code,
           key: header.code,
-          width: 150,
           children: [
             {
               title: 'Value',
               dataIndex: header.code,
               key: 'value',
-              width: 150,
             },
             {
               title: 'National Benchmark',
               dataIndex: `${header.code} National Benchmark`,
               key: `${header.code} National Benchmark`,
-              width: 150,
             },
             {
               title: 'International Benchmark',
               dataIndex: `${header.code} International Benchmark`,
               key: `${header.code} International Benchmark`,
-              width: 150,
             },
           ],
         },
@@ -102,7 +100,7 @@ export const formatColumns = (indicators, dataElements) => {
     title: 'Reporting Year',
     dataIndex: 'reportingYear',
     key: 'reportingYear',
-    width: 150,
+    width: 250,
   });
 
   return columns;
