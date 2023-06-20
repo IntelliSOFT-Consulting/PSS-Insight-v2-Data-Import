@@ -56,7 +56,7 @@ const generateTemplate = (indicators, dataElements, orgUnits) => {
   }
 
   const begin = 3;
-  const end = 1000;
+  const end = 100;
 
   const columnNames = generateExcelColumns(Object.keys(secondRow).length);
 
@@ -132,14 +132,25 @@ const generateTemplate = (indicators, dataElements, orgUnits) => {
           'Please enter a valid year (data entry for future years and duplicates are not allowed)';
       } else {
         if (flattenedData[index - 1].valueType === 'NUMBER') {
-          validation.type = 'decimal';
-          validation.error = 'Please enter a valid numeric value';
-          delete validation.formulae;
+          validation = {
+            type: 'custom',
+            allowBlank: true,
+            formulae: [`=ISNUMBER(${column}${i})`],
+            showErrorMessage: true,
+            errorStyle: 'error',
+            errorTitle: 'Invalid Value',
+            error: 'Please enter a valid value',
+          };
         } else if (flattenedData[index - 1].valueType === 'BOOLEAN') {
-          validation.type = 'list';
-          validation.allowBlank = true;
-          validation.formulae = ['"Yes,No"'];
-          validation.error = 'Please enter a Yes or No';
+          validation = {
+            type: 'list',
+            allowBlank: true,
+            formulae: ['"Yes,No"'],
+            showErrorMessage: true,
+            errorStyle: 'error',
+            errorTitle: 'Invalid Value',
+            error: 'Please enter a Yes or No',
+          };
         }
       }
       const cell = worksheet.getCell(`${column}${i}`);
