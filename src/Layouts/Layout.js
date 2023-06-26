@@ -19,7 +19,7 @@ const useStyles = createUseStyles({
   },
   layout: {
     display: 'grid !important',
-    gridTemplateColumns: '200px 1fr',
+    gridTemplateColumns: '270px 1fr',
     gridTemplateRows: '1fr',
     gridTemplateAreas: '"sidebar main"',
     minHeight: 'calc(100vh - 48px)',
@@ -67,13 +67,17 @@ export default function MainLayout({ data }) {
       label: createLink('Data Export', '/export'),
       key: 'Data Export',
     },
+    {
+      label: createLink('Global Health Observatory Import', '/gho'),
+      key: 'GHO',
+    },
   ];
 
   return (
     <div className={classes.layout}>
       <Layout>
         <Sider
-          width={200}
+          width={270}
           style={{
             minHeight: 'calc(100vh - 48px)',
           }}
@@ -100,7 +104,7 @@ export default function MainLayout({ data }) {
             padding: 24,
             margin: 0,
             minHeight: 280,
-            maxWidth: 'calc(100vw - 248px)',
+            maxWidth: 'calc(100vw - 308px)',
           }}
         >
           <Routes>

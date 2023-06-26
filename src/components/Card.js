@@ -31,7 +31,7 @@ const useStyles = createUseStyles({
     margin: '0 auto',
   },
   footer: {
-    padding: '20px 1.5rem',
+    padding: '15px 1.5rem',
     backgroundColor: '#E3EEF7',
     position: 'absolute',
     bottom: 0,

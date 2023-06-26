@@ -16,7 +16,9 @@
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
     "@dhis2/app-runtime": "^3.9.3",
+    "@dhis2/ui": "^8.13.11",
     "@handsontable/react": "^12.4.0",
+    "@headlessui/react": "^1.7.15",
     "@heroicons/react": "^2.0.18",
     "antd": "^5.5.1",
     "date-fns": "^2.30.0",

@@ -1,6 +1,7 @@
 import Template from '../Pages/Template';
 import Upload from '../Pages/Upload';
 import Export from '../Pages/Export';
+import GHO from '../Pages/GHO';
 
 const routes = [
   {
@@ -14,6 +15,10 @@ const routes = [
   {
     path: '/export',
     element: Export,
+  },
+  {
+    path: '/gho',
+    element: GHO,
   },
 ];
 

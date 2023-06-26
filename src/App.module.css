@@ -1,9 +1,8 @@
-.container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
+@font-face {
+  font-family: 'Gill Sans'; /* Name the font family */
+  src: url('./assets/fonts/GILLSANS.woff') format('woff');
+}
+
+* {
+  font-family: 'Gill Sans', sans-serif !important;
 }
