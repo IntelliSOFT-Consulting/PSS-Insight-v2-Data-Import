@@ -37,6 +37,7 @@ export default function GHO() {
   const [selected, setSelected] = useState([]);
   const [country, setCountry] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
 
   const classes = useStyles();
 
@@ -61,15 +62,10 @@ export default function GHO() {
   };
 
   const mutation = {
-    resource: 'tracker',
+    resource: 'dataValueSets',
     type: 'create',
-    params: _data => ({
-      async: 'false',
-    }),
-
     data: _data => {
-      console.log('dataPayload: ', _data);
-      return { events: Object.values(_data) };
+      return { dataValues: Object.values(_data) };
     },
   };
 
@@ -83,7 +79,7 @@ export default function GHO() {
 
   const {
     loading,
-    error,
+    erro: queryError,
     data: { orgUnits, programs } = {},
   } = useDataQuery(query);
   const onChange = ({ selected }) => {
@@ -91,7 +87,6 @@ export default function GHO() {
   };
 
   const handleChange = value => {
-    console.log(value);
     setCountry(value);
   };
 
@@ -109,22 +104,12 @@ export default function GHO() {
 
     const formattedData = indicators.map((indicator, i) => {
       const { value } = indicator;
-      console.log('value: ', value);
       return value.map(v => {
         return {
-          occurredAt: `${v.TimeDim}-01-01`,
-          status: 'COMPLETED',
-          notes: [],
-          completedAt: new Date(),
-          program: programs?.programs[0]?.id,
-          programStage: programs?.programs[0]?.programStages[0]?.id,
+          period: v.TimeDim,
           orgUnit,
-          dataValues: [
-            {
-              dataElement: getIndicatorId(selected[i]),
-              value: v.Value,
-            },
-          ],
+          dataElement: getIndicatorId(selected[i]),
+          value: v.Value,
         };
       });
     });
@@ -133,6 +118,18 @@ export default function GHO() {
 
     await mutate(payload);
   };
+
+  useEffect(() => {
+    if (mutationError || queryError) {
+      setError(mutationError?.message || queryError?.messages);
+
+      const timeout = setTimeout(() => {
+        setError(null);
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [mutationError, queryError]);
 
   return (
     <Card
@@ -154,11 +151,12 @@ export default function GHO() {
       ) : (
         <>
           {mutationLoading && <Loader />}
-          {mutationError && (
+          {error && (
             <Notification
               title='Error'
-              message={mutationError?.message}
+              message={error}
               status='error'
+              onClose={() => setError(null)}
             />
           )}
           {success && (
@@ -181,7 +179,7 @@ export default function GHO() {
               }
             >
               {orgUnits?.organisationUnits?.map(({ code, name }) => (
-                <Option key={CodeBracketIcon} value={code}>
+                <Option key={code} value={code}>
                   {name}
                 </Option>
               ))}
