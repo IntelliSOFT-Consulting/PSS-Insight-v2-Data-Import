@@ -173,21 +173,23 @@ export default function GHO() {
             />
           )}
 
-          <SingleSelectField
-            className={classes.select}
-            filterable
-            noMatchText='No match found'
-            onChange={value => {
-              console.log(value);
-              setCountry(selected?.selected);
-            }}
-            placeholder='Select a country'
-            selected={country}
-          >
-            {orgUnits?.organisationUnits?.map(({ code, name }) => (
-              <SingleSelectOption label={name} value={code} />
-            ))}
-          </SingleSelectField>
+          {orgUnits?.organisationUnits?.length > 0 && (
+            <SingleSelectField
+              className={classes.select}
+              filterable
+              noMatchText='No match found'
+              onChange={value => {
+                console.log(value);
+                setCountry(selected?.selected);
+              }}
+              placeholder='Select a country'
+              selected={country}
+            >
+              {orgUnits?.organisationUnits?.map(({ code, name }) => (
+                <SingleSelectOption label={name} value={code} />
+              ))}
+            </SingleSelectField>
+          )}
 
           <div className={classes.transfer}>
             <div>
