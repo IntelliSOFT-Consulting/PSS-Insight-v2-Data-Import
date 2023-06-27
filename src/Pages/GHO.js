@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card } from '../components/Card';
+import Card from '../components/Card';
 import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
-import { Form } from 'antd';
+import { Form, Select } from 'antd';
 
 export default function GHO() {
   const query = {
@@ -55,8 +55,10 @@ export default function GHO() {
             showSearch
             placeholder='Select a country'
             optionFilterProp='children'
-            onChange={onChange}
-            value={country}
+            onChange={(value, option) => {
+              console.log(value, option);
+            }}
+            // value={country}
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
