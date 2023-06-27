@@ -9,6 +9,7 @@ import { CheckBadgeIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import { getIndicators } from '../lib/gho';
 import Loader from '../components/Loader';
 import Notification from '../components/Notification';
+import { set } from 'date-fns';
 
 const { Option } = Select;
 
@@ -38,6 +39,7 @@ export default function GHO() {
   const [country, setCountry] = useState(null);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const classes = useStyles();
 
@@ -72,13 +74,14 @@ export default function GHO() {
   const [mutate, { loading: mutationLoading, error: mutationError }] =
     useDataMutation(mutation, {
       onComplete: ({ data }) => {
-        console.log(data);
         setSuccess('Data imported successfully');
+        setSelected([]);
+        setCountry(null);
       },
     });
 
   const {
-    loading,
+    loading: queryLoading,
     erro: queryError,
     data: { orgUnits, programs } = {},
   } = useDataQuery(query);
@@ -96,6 +99,7 @@ export default function GHO() {
   };
 
   const handleImport = async () => {
+    setLoading(true);
     const indicators = await getIndicators(selected, country);
 
     const orgUnit = orgUnits?.organisationUnits?.find(
@@ -117,6 +121,7 @@ export default function GHO() {
     const payload = formattedData.flat();
 
     await mutate(payload);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -140,17 +145,18 @@ export default function GHO() {
             type='primary'
             disabled={selected.length === 0 || country === null}
             onClick={handleImport}
+            loading={mutationLoading || loading}
           >
             Import
           </Button>
         </div>
       }
     >
-      {loading ? (
+      {queryLoading ? (
         <Loader />
       ) : (
         <>
-          {mutationLoading && <Loader />}
+          {/* {mutationLoading && <Loader />} */}
           {error && (
             <Notification
               title='Error'
@@ -175,15 +181,20 @@ export default function GHO() {
               optionFilterProp='children'
               onChange={handleChange}
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label ?? '').includes(input)
               }
-            >
-              {orgUnits?.organisationUnits?.map(({ code, name }) => (
-                <Option key={code} value={code}>
-                  {name}
-                </Option>
-              ))}
-            </Select>
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={
+                orgUnits?.organisationUnits?.map(({ code, name }) => ({
+                  label: name,
+                  value: code,
+                })) ?? []
+              }
+            />
           </div>
 
           <div className={classes.transfer}>
@@ -199,12 +210,6 @@ export default function GHO() {
                 options={localIndicators}
               />
             </div>
-            {/* <div className='border-dashed border-gray-300 rounded-lg p-4'>
-              <CheckBadgeIcon className='h-6 w-6 text-gray-400' />
-              <p className='text-gray-400'>
-                Data will be imported into the selected country.
-              </p>
-            </div> */}
           </div>
         </>
       )}
