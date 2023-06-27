@@ -179,6 +179,7 @@ export default function GHO() {
               style={{ width: 200 }}
               placeholder='Select a country'
               optionFilterProp='children'
+              value={country}
               onChange={handleChange}
               filterOption={(input, option) =>
                 (option?.label ?? '').includes(input)
