@@ -90,6 +90,7 @@ export default function GHO() {
   };
 
   const handleChange = value => {
+    console.log(value)
     setCountry(value);
   };
 
@@ -175,20 +176,20 @@ export default function GHO() {
           )}
           <div>
             <Select
-              showSearch
+              // showSearch
               style={{ width: 200 }}
               placeholder='Select a country'
-              optionFilterProp='children'
+              // optionFilterProp='children'
               value={country}
               onChange={handleChange}
-              filterOption={(input, option) =>
-                (option?.label ?? '').includes(input)
-              }
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
+              // filterOption={(input, option) =>
+              //   (option?.label ?? '').includes(input)
+              // }
+              // filterSort={(optionA, optionB) =>
+              //   (optionA?.label ?? '')
+              //     .toLowerCase()
+              //     .localeCompare((optionB?.label ?? '').toLowerCase())
+              // }
               options={
                 orgUnits?.organisationUnits?.map(({ code, name }) => ({
                   label: name,
