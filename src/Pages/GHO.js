@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import { Transfer, SingleSelectField, SingleSelectOption } from '@dhis2/ui';
 import { createUseStyles } from 'react-jss';
-import { Button, Select } from 'antd';
+import { Button, Select, Form } from 'antd';
 import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
 import localIndicators from '../data/indicators.json';
 import { CheckBadgeIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
@@ -46,6 +46,7 @@ export default function GHO() {
   const [loading, setLoading] = useState(false);
 
   const classes = useStyles();
+  const [form] = Form.useForm();
 
   const query = {
     orgUnits: {
@@ -89,6 +90,7 @@ export default function GHO() {
     erro: queryError,
     data: { orgUnits, programs } = {},
   } = useDataQuery(query);
+
   const onChange = ({ selected }) => {
     setSelected(selected);
   };
@@ -103,12 +105,12 @@ export default function GHO() {
     return indicator?.id;
   };
 
-  const handleImport = async () => {
-    setLoading(true);
-    const indicators = await getIndicators(selected, country);
+  const handleImport = async (values) => {
+   console.log('formValues', values)
+    const indicators = await getIndicators(values.indicators?.selected, values.country);
 
     const orgUnit = orgUnits?.organisationUnits?.find(
-      ({ code }) => code === country || 'UGA'
+      ({ code }) => code === values.country || 'UGA'
     )?.id;
 
     const formattedData = indicators.map((indicator, i) => {
@@ -117,14 +119,14 @@ export default function GHO() {
         return {
           period: v.TimeDim,
           orgUnit,
-          dataElement: getIndicatorId(selected[i]),
+          dataElement: getIndicatorId(values.indicators?.selected[i]),
           value: v.Value,
         };
       });
     });
 
     const payload = formattedData.flat();
-
+console.log('payload', payload)
     await mutate(payload);
     setLoading(false);
   };
@@ -155,7 +157,9 @@ export default function GHO() {
           <Button
             type='primary'
             disabled={selected.length === 0 || country === null}
-            onClick={handleImport}
+            onClick={() => {
+              form.submit();
+            }}
             loading={mutationLoading || loading}
           >
             Import
@@ -167,7 +171,6 @@ export default function GHO() {
         <Loader />
       ) : (
         <>
-          {/* {mutationLoading && <Loader />} */}
           {error && (
             <Notification
               title='Error'
@@ -184,14 +187,23 @@ export default function GHO() {
               onClose={() => setSuccess(null)}
             />
           )}
-          <div>
-            {countries?.length > 0 && (
+          <Form form={form} layout='vertical' onFinish={handleImport}>
+            <Form.Item
+              label='Country'
+              name='country'
+              rules={[
+                {
+                  required: true,
+                  message: 'Please select a country',
+                },
+              ]}
+            >
               <Select
                 showSearch
                 style={{ width: 200 }}
                 placeholder='Select a country'
                 optionFilterProp='children'
-                value={country}
+                // value={country}
                 onChange={handleChange}
                 filterOption={(input, option) =>
                   (option?.label ?? '').includes(input)
@@ -208,23 +220,33 @@ export default function GHO() {
                   })) ?? []
                 }
               />
-            )}
-          </div>
+            </Form.Item>
 
-          <div className={classes.transfer}>
-            <div>
-              <p>
-                Select the data you want to download by clicking on the
-                corresponding indicators.
-              </p>
-
-              <Transfer
-                selected={selected}
-                onChange={onChange}
-                options={localIndicators}
-              />
+            <div className={classes.transfer}>
+              <div>
+                <p>
+                  Select the data you want to download by clicking on the
+                  corresponding indicators.
+                </p>
+                <Form.Item
+                  label='Indicators'
+                  name='indicators'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please select at least one indicator',
+                    },
+                  ]}
+                >
+                  <Transfer
+                    selected={selected}
+                    onChange={onChange}
+                    options={localIndicators}
+                  />
+                </Form.Item>
+              </div>
             </div>
-          </div>
+          </Form>
         </>
       )}
     </Card>
