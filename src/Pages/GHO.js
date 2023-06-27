@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import { Transfer } from '@dhis2/ui';
 import { createUseStyles } from 'react-jss';
-import { Button, Select } from 'antd';
+import { Button, Select, Form } from 'antd';
 import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
 import localIndicators from '../data/indicators.json';
 import { CheckBadgeIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import { getIndicators } from '../lib/gho';
 import Loader from '../components/Loader';
 import Notification from '../components/Notification';
-import { set } from 'date-fns';
 
 const { Option } = Select;
 
@@ -42,6 +41,8 @@ export default function GHO() {
   const [loading, setLoading] = useState(false);
 
   const classes = useStyles();
+
+  const [form] = Form.useForm();
 
   const query = {
     orgUnits: {
@@ -76,7 +77,7 @@ export default function GHO() {
       onComplete: ({ data }) => {
         setSuccess('Data imported successfully');
         setSelected([]);
-        setCountry(null);
+        form.resetFields();
       },
     });
 
@@ -89,11 +90,6 @@ export default function GHO() {
     setSelected(selected);
   };
 
-  const handleChange = value => {
-    console.log(value)
-    setCountry(value);
-  };
-
   const getIndicatorId = value => {
     const indicator = localIndicators.find(({ value: v }) => v === value);
     return indicator?.id;
@@ -102,6 +98,8 @@ export default function GHO() {
   const handleImport = async () => {
     setLoading(true);
     const indicators = await getIndicators(selected, country);
+
+    
 
     const orgUnit = orgUnits?.organisationUnits?.find(
       ({ code }) => code === country
@@ -174,30 +172,41 @@ export default function GHO() {
               onClose={() => setSuccess(null)}
             />
           )}
-          <div>
-            <Select
-              // showSearch
-              style={{ width: 200 }}
-              placeholder='Select a country'
-              // optionFilterProp='children'
-              value={country}
-              onChange={handleChange}
-              // filterOption={(input, option) =>
-              //   (option?.label ?? '').includes(input)
-              // }
-              // filterSort={(optionA, optionB) =>
-              //   (optionA?.label ?? '')
-              //     .toLowerCase()
-              //     .localeCompare((optionB?.label ?? '').toLowerCase())
-              // }
-              options={
-                orgUnits?.organisationUnits?.map(({ code, name }) => ({
-                  label: name,
-                  value: code,
-                })) ?? []
-              }
-            />
-          </div>
+          <Form
+            form={form}
+            layout='vertical'
+            onValuesChange={(_changedValues, allValues) => {
+              form.validateFields();
+              setCountry(allValues.country);
+            }}
+          >
+            <Form.Item
+              name='country'
+              label='Country'
+              rules={[{ required: true, message: 'Please select a country' }]}
+            >
+              <Select
+                showSearch
+                style={{ width: 200 }}
+                placeholder='Select a country'
+                optionFilterProp='children'
+                filterOption={(input, option) =>
+                  (option?.label ?? '').includes(input)
+                }
+                filterSort={(optionA, optionB) =>
+                  (optionA?.label ?? '')
+                    .toLowerCase()
+                    .localeCompare((optionB?.label ?? '').toLowerCase())
+                }
+                options={
+                  orgUnits?.organisationUnits?.map(({ code, name }) => ({
+                    label: name,
+                    value: code,
+                  })) ?? []
+                }
+              />
+            </Form.Item>
+          </Form>
 
           <div className={classes.transfer}>
             <div>
