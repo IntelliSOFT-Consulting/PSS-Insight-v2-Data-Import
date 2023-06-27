@@ -10,8 +10,6 @@ import { getIndicators } from '../lib/gho';
 import Loader from '../components/Loader';
 import Notification from '../components/Notification';
 
-const { Option } = Select;
-
 const useStyles = createUseStyles({
   transfer: {
     '& button.icon-only': {
@@ -105,9 +103,12 @@ export default function GHO() {
     return indicator?.id;
   };
 
-  const handleImport = async (values) => {
-   console.log('formValues', values)
-    const indicators = await getIndicators(values.indicators?.selected, values.country);
+  const handleImport = async values => {
+    console.log('formValues', values);
+    const indicators = await getIndicators(
+      values.indicators?.selected,
+      values.country
+    );
 
     const orgUnit = orgUnits?.organisationUnits?.find(
       ({ code }) => code === values.country || 'UGA'
@@ -126,7 +127,7 @@ export default function GHO() {
     });
 
     const payload = formattedData.flat();
-console.log('payload', payload)
+    console.log('payload', payload);
     await mutate(payload);
     setLoading(false);
   };
@@ -156,7 +157,7 @@ console.log('payload', payload)
         <div className={classes.footer}>
           <Button
             type='primary'
-            disabled={selected.length === 0 || country === null}
+            // disabled={selected.length === 0 || country === null}
             onClick={() => {
               form.submit();
             }}
