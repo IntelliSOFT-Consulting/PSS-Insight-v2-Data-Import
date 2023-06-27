@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import { Transfer, SingleSelectField, SingleSelectOption } from '@dhis2/ui';
 import { createUseStyles } from 'react-jss';
-import { Button, Select, Form } from 'antd';
+import { Button, Select } from 'antd';
 import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
 import localIndicators from '../data/indicators.json';
 import { CheckBadgeIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
@@ -39,6 +39,7 @@ const useStyles = createUseStyles({
 
 export default function GHO() {
   const [selected, setSelected] = useState([]);
+  const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState(null);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
@@ -92,6 +93,11 @@ export default function GHO() {
     setSelected(selected);
   };
 
+  const handleChange = value => {
+    console.log(value);
+    setCountry(value);
+  };
+
   const getIndicatorId = value => {
     const indicator = localIndicators.find(({ value: v }) => v === value);
     return indicator?.id;
@@ -135,6 +141,12 @@ export default function GHO() {
     }
   }, [mutationError, queryError]);
 
+  useEffect(() => {
+    if (orgUnits?.organisationUnits) {
+      setCountries(orgUnits?.organisationUnits);
+    }
+  }, [orgUnits]);
+
   return (
     <Card
       title='GLOBAL HEALTH OBSERVATORY'
@@ -172,24 +184,32 @@ export default function GHO() {
               onClose={() => setSuccess(null)}
             />
           )}
-
-          {orgUnits?.organisationUnits?.length > 0 && (
-            <SingleSelectField
-              className={classes.select}
-              filterable
-              noMatchText='No match found'
-              onChange={value => {
-                console.log(value);
-                setCountry(selected?.selected);
-              }}
-              placeholder='Select a country'
-              selected={country}
-            >
-              {orgUnits?.organisationUnits?.map(({ code, name }) => (
-                <SingleSelectOption label={name} value={code} />
-              ))}
-            </SingleSelectField>
-          )}
+          <div>
+            {countries?.length > 0 && (
+              <Select
+                showSearch
+                style={{ width: 200 }}
+                placeholder='Select a country'
+                optionFilterProp='children'
+                value={country}
+                onChange={handleChange}
+                filterOption={(input, option) =>
+                  (option?.label ?? '').includes(input)
+                }
+                filterSort={(optionA, optionB) =>
+                  (optionA?.label ?? '')
+                    .toLowerCase()
+                    .localeCompare((optionB?.label ?? '').toLowerCase())
+                }
+                options={
+                  countries?.map(({ code, name }) => ({
+                    label: name,
+                    value: code,
+                  })) ?? []
+                }
+              />
+            )}
+          </div>
 
           <div className={classes.transfer}>
             <div>
