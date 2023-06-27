@@ -177,9 +177,9 @@ export default function GHO() {
             className={classes.select}
             filterable
             noMatchText='No match found'
-            onChange={({ selected }) => {
-              console.log(selected)
-              setCountry(selected);
+            onChange={value => {
+              console.log(value);
+              setCountry(selected?.selected);
             }}
             placeholder='Select a country'
             selected={country}
