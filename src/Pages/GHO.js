@@ -102,7 +102,7 @@ export default function GHO() {
     const indicators = await getIndicators(selected, country);
 
     const orgUnit = orgUnits?.organisationUnits?.find(
-      ({ code }) => code === country
+      ({ code }) => code === country || 'UGA'
     )?.id;
 
     const formattedData = indicators.map((indicator, i) => {
