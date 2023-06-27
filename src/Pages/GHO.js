@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
-import { Transfer } from '@dhis2/ui';
+import { Transfer, SingleSelectField, SingleSelectOption } from '@dhis2/ui';
 import { createUseStyles } from 'react-jss';
 import { Button, Select, Form } from 'antd';
 import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
@@ -31,6 +31,10 @@ const useStyles = createUseStyles({
     justifyContent: 'flex-end',
     width: '100%',
   },
+  select: {
+    marginBottom: 10,
+    width: '30rem',
+  },
 });
 
 export default function GHO() {
@@ -41,8 +45,6 @@ export default function GHO() {
   const [loading, setLoading] = useState(false);
 
   const classes = useStyles();
-
-  const [form] = Form.useForm();
 
   const query = {
     orgUnits: {
@@ -77,7 +79,7 @@ export default function GHO() {
       onComplete: ({ data }) => {
         setSuccess('Data imported successfully');
         setSelected([]);
-        form.resetFields();
+        setCountry(null);
       },
     });
 
@@ -98,8 +100,6 @@ export default function GHO() {
   const handleImport = async () => {
     setLoading(true);
     const indicators = await getIndicators(selected, country);
-
-    
 
     const orgUnit = orgUnits?.organisationUnits?.find(
       ({ code }) => code === country
@@ -172,41 +172,21 @@ export default function GHO() {
               onClose={() => setSuccess(null)}
             />
           )}
-          <Form
-            form={form}
-            layout='vertical'
-            onValuesChange={(_changedValues, allValues) => {
-              form.validateFields();
-              setCountry(allValues.country);
+
+          <SingleSelectField
+            className={classes.select}
+            filterable
+            noMatchText='No match found'
+            onChange={({ selected }) => {
+              setCountry(selected);
             }}
+            placeholder='Select a country'
+            selected={country}
           >
-            <Form.Item
-              name='country'
-              label='Country'
-              rules={[{ required: true, message: 'Please select a country' }]}
-            >
-              <Select
-                showSearch
-                style={{ width: 200 }}
-                placeholder='Select a country'
-                optionFilterProp='children'
-                filterOption={(input, option) =>
-                  (option?.label ?? '').includes(input)
-                }
-                filterSort={(optionA, optionB) =>
-                  (optionA?.label ?? '')
-                    .toLowerCase()
-                    .localeCompare((optionB?.label ?? '').toLowerCase())
-                }
-                options={
-                  orgUnits?.organisationUnits?.map(({ code, name }) => ({
-                    label: name,
-                    value: code,
-                  })) ?? []
-                }
-              />
-            </Form.Item>
-          </Form>
+            {orgUnits?.organisationUnits?.map(({ code, name }) => (
+              <SingleSelectOption label={name} value={code} />
+            ))}
+          </SingleSelectField>
 
           <div className={classes.transfer}>
             <div>
