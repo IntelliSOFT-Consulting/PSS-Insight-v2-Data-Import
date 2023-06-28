@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDataQuery } from '@dhis2/app-runtime';
-import { Button } from 'antd';
 import {
   formatColumns,
-  formatData,
   formatDataElements,
   createExport,
 } from '../lib/export';
-// import { read, utils, writeFileXLSX } from 'xlsx';
-import { registerAllModules } from 'handsontable/registry';
-import { DatePicker, Form, Table } from 'antd';
+import { DatePicker, Form, Table, Button } from 'antd';
 import moment from 'moment';
 import CardItem from '../components/Card';
 import { createUseStyles } from 'react-jss';
@@ -77,7 +73,6 @@ const useStyles = createUseStyles({
   },
 });
 
-registerAllModules();
 
 export default function Export({
   data: { dataElements, indicators, me, programs },
