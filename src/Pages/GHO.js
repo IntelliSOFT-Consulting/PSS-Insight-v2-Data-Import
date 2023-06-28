@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
-import { useDataMutation } from '@dhis2/app-runtime';
-import { Form, Select, Button } from 'antd';
+import { Transfer, SingleSelectField, SingleSelectOption } from '@dhis2/ui';
 import { createUseStyles } from 'react-jss';
-import { Transfer } from '@dhis2/ui';
+import { Button, Form } from 'antd';
+import { useDataMutation } from '@dhis2/app-runtime';
 import localIndicators from '../data/indicators.json';
-// import { getIndicators } from '../lib/gho';
+import { getIndicators } from '../lib/gho';
+import Notification from '../components/Notification';
 
 const useStyles = createUseStyles({
   transfer: {
@@ -33,6 +34,16 @@ const useStyles = createUseStyles({
 });
 
 export default function GHO({ data: { orgUnits } }) {
+  const [selected, setSelected] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [country, setCountry] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const classes = useStyles();
+  const [form] = Form.useForm();
+
   const mutation = {
     resource: 'dataValueSets',
     type: 'create',
@@ -46,85 +57,172 @@ export default function GHO({ data: { orgUnits } }) {
       onComplete: ({ data }) => {
         setSuccess('Data imported successfully');
         setSelected([]);
+        setCountry(null);
+        form.resetFields();
       },
     });
 
-  const [form] = Form.useForm();
-
-  const classes = useStyles();
-
-  const [selected, setSelected] = useState([]);
-
-  const onFinish = values => {
-    const { indicators, country } = values;
-    console.log('values', values);
+  const onChange = ({ selected }) => {
+    setSelected(selected);
   };
+
+  const handleChange = value => {
+    setCountry(value);
+  };
+
+  const getIndicatorId = value => {
+    const indicator = localIndicators.find(({ value: v }) => v === value);
+    return indicator?.id;
+  };
+
+  const handleImport = async values => {
+    try {
+      setLoading(true);
+      const indicators = await getIndicators(
+        values.indicators?.selected,
+        values.country?.selected
+      );
+
+      const orgUnit = orgUnits?.organisationUnits?.find(
+        ({ code }) => code === values.country.selected || 'UGA'
+      )?.id;
+
+      const formattedData = indicators.map((indicator, i) => {
+        const { value } = indicator;
+        return value.map(v => {
+          return {
+            period: v.TimeDim,
+            orgUnit,
+            dataElement: getIndicatorId(values.indicators?.selected[i]),
+            value: v.Value,
+          };
+        });
+      });
+
+      const payload = formattedData.flat();
+      await mutate(payload);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(error?.message);
+    }
+  };
+
+  useEffect(() => {
+    if (mutationError) {
+      setError(mutationError?.message);
+
+      const timeout = setTimeout(() => {
+        setError(null);
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [mutationError]);
+
+  useEffect(() => {
+    if (orgUnits?.organisationUnits) {
+      setCountries(orgUnits?.organisationUnits);
+    }
+  }, [orgUnits]);
 
   return (
     <Card
-      title='GHO'
+      title='GLOBAL HEALTH OBSERVATORY'
       footer={
         <div className={classes.footer}>
           <Button
             type='primary'
-            // disabled={selected.length === 0 || country === null}
             onClick={() => {
               form.submit();
             }}
-            // loading={mutationLoading || loading}
+            loading={mutationLoading || loading}
           >
             Import
           </Button>
         </div>
       }
     >
-      <Form layout='vertical' form={form} onFinish={onFinish}>
-        <Form.Item label='Country' name='country'>
-          <select
-            showSearch
-            placeholder='Select a country'
-            // optionFilterProp='children'
-            // onChange={(value, option) => {
-            //   console.log(value, option);
-            // }}
-            // filterOption={(input, option) =>
-            //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            // }
-          >
-            {orgUnits?.organisationUnits?.map(({ code, name }) => (
-              <option key={code} value={code}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </Form.Item>
-        <div className={classes.transfer}>
-          <div>
-            <p>
-              Select the data you want to download by clicking on the
-              corresponding indicators.
-            </p>
+      {
+        <>
+          {error && (
+            <Notification
+              title='Error'
+              message={error}
+              status='error'
+              onClose={() => setError(null)}
+            />
+          )}
+          {success && (
+            <Notification
+              title='Success'
+              message={success}
+              status='success'
+              onClose={() => setSuccess(null)}
+            />
+          )}
+          <Form form={form} layout='vertical' onFinish={handleImport}>
             <Form.Item
-              label='Indicators'
-              name='indicators'
+              label='Country'
+              name='country'
               rules={[
                 {
                   required: true,
-                  message: 'Please select at least one indicator',
+                  message: 'Please select a country',
                 },
               ]}
             >
-              <Transfer
-                selected={selected}
-                onChange={({selected}) => {
-                  setSelected(selected);
+              <SingleSelectField
+                className={classes.select}
+                filterable
+                noMatchText='No match found'
+                onChange={({ selected }) => {
+                  setCountry(selected);
                 }}
-                options={localIndicators}
-              />
+                placeholder='Select a country'
+                selected={country}
+              >
+                {orgUnits?.organisationUnits?.map(({ code, name }) => (
+                  <SingleSelectOption key={code} label={name} value={code} />
+                ))}
+              </SingleSelectField>
             </Form.Item>
-          </div>
-        </div>
-      </Form>
+
+            <div className={classes.transfer}>
+              <div>
+                <p>
+                  Select the data you want to download by clicking on the
+                  corresponding indicators.
+                </p>
+                <Form.Item
+                  label='Indicators'
+                  name='indicators'
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please select at least one indicator',
+                    },
+                    {
+                      validator: (_, value) =>
+                        value?.selected?.length > 0
+                          ? Promise.resolve()
+                          : Promise.reject(
+                              new Error('Please select at least one indicator')
+                            ),
+                    },
+                  ]}
+                >
+                  <Transfer
+                    selected={selected}
+                    onChange={onChange}
+                    options={localIndicators}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+          </Form>
+        </>
+      }
     </Card>
   );
 }

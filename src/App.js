@@ -57,7 +57,7 @@ const query = {
   orgUnits: {
     resource: 'organisationUnits',
     params: ({ page }) => ({
-      fields: 'id,name,code, level',
+      fields: 'id,name,code',
       order: 'name:asc',
       filter: 'level:eq:3',
       pageSize: 1000,
