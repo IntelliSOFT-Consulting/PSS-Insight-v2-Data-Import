@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import Card from '../components/Card';
-import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
+import { useDataMutation } from '@dhis2/app-runtime';
 import { Form, Select, Button } from 'antd';
 import { createUseStyles } from 'react-jss';
-// import { Transfer } from '@dhis2/ui';
+import { Transfer } from '@dhis2/ui';
 import localIndicators from '../data/indicators.json';
-import { getIndicators } from '../lib/gho';
+// import { getIndicators } from '../lib/gho';
 
 const useStyles = createUseStyles({
   transfer: {
@@ -32,27 +32,7 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function GHO() {
-  const query = {
-    orgUnits: {
-      resource: 'organisationUnits',
-      params: ({ page }) => ({
-        fields: 'id,name,code, level',
-        order: 'name:asc',
-        filter: 'level:eq:3',
-        pageSize: 1000,
-      }),
-    },
-    programs: {
-      resource: 'programs',
-      params: ({ page }) => ({
-        fields: 'id,name,code,programStages[id]',
-        order: 'name:asc',
-        pageSize: 10,
-      }),
-    },
-  };
-
+export default function GHO({ data: { orgUnits } }) {
   const mutation = {
     resource: 'dataValueSets',
     type: 'create',
@@ -66,15 +46,8 @@ export default function GHO() {
       onComplete: ({ data }) => {
         setSuccess('Data imported successfully');
         setSelected([]);
-        // setCountry(null);
       },
     });
-
-  const {
-    loading: queryLoading,
-    erro: queryError,
-    data: { orgUnits, programs } = {},
-  } = useDataQuery(query);
 
   const [form] = Form.useForm();
 
@@ -131,7 +104,7 @@ export default function GHO() {
               Select the data you want to download by clicking on the
               corresponding indicators.
             </p>
-            {/* <Form.Item
+            <Form.Item
               label='Indicators'
               name='indicators'
               rules={[
@@ -148,7 +121,7 @@ export default function GHO() {
                 }}
                 options={localIndicators}
               />
-            </Form.Item> */}
+            </Form.Item>
           </div>
         </div>
       </Form>

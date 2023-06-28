@@ -54,6 +54,15 @@ const query = {
       pageSize: 5000,
     }),
   },
+  orgUnits: {
+    resource: 'organisationUnits',
+    params: ({ page }) => ({
+      fields: 'id,name,code, level',
+      order: 'name:asc',
+      filter: 'level:eq:3',
+      pageSize: 1000,
+    }),
+  },
 };
 
 const MyApp = () => {
