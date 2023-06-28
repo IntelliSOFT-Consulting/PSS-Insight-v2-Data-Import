@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Card from '../components/Card';
-import { Transfer, SingleSelectField, SingleSelectOption } from '@dhis2/ui';
-import { createUseStyles } from 'react-jss';
-import { Button, Select, Form } from 'antd';
 import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
+import { Form, Select, Button } from 'antd';
+import { createUseStyles } from 'react-jss';
+import { Transfer } from '@dhis2/ui';
 import localIndicators from '../data/indicators.json';
-import { CheckBadgeIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import { getIndicators } from '../lib/gho';
-import Loader from '../components/Loader';
-import Notification from '../components/Notification';
 
 const useStyles = createUseStyles({
   transfer: {
@@ -36,16 +33,6 @@ const useStyles = createUseStyles({
 });
 
 export default function GHO() {
-  const [selected, setSelected] = useState([]);
-  const [countries, setCountries] = useState([]);
-  const [country, setCountry] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const classes = useStyles();
-  const [form] = Form.useForm();
-
   const query = {
     orgUnits: {
       resource: 'organisationUnits',
@@ -79,7 +66,7 @@ export default function GHO() {
       onComplete: ({ data }) => {
         setSuccess('Data imported successfully');
         setSelected([]);
-        setCountry(null);
+        // setCountry(null);
       },
     });
 
@@ -89,70 +76,20 @@ export default function GHO() {
     data: { orgUnits, programs } = {},
   } = useDataQuery(query);
 
-  const onChange = ({ selected }) => {
-    setSelected(selected);
+  const [form] = Form.useForm();
+
+  const classes = useStyles();
+
+  const [selected, setSelected] = useState([]);
+
+  const onFinish = values => {
+    const { indicators, country } = values;
+    console.log('values', values);
   };
-
-  const handleChange = value => {
-    console.log(value);
-    setCountry(value);
-  };
-
-  const getIndicatorId = value => {
-    const indicator = localIndicators.find(({ value: v }) => v === value);
-    return indicator?.id;
-  };
-
-  const handleImport = async values => {
-    console.log('formValues', values);
-    const indicators = await getIndicators(
-      values.indicators?.selected,
-      values.country
-    );
-
-    const orgUnit = orgUnits?.organisationUnits?.find(
-      ({ code }) => code === values.country || 'UGA'
-    )?.id;
-
-    const formattedData = indicators.map((indicator, i) => {
-      const { value } = indicator;
-      return value.map(v => {
-        return {
-          period: v.TimeDim,
-          orgUnit,
-          dataElement: getIndicatorId(values.indicators?.selected[i]),
-          value: v.Value,
-        };
-      });
-    });
-
-    const payload = formattedData.flat();
-    console.log('payload', payload);
-    await mutate(payload);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (mutationError || queryError) {
-      setError(mutationError?.message || queryError?.messages);
-
-      const timeout = setTimeout(() => {
-        setError(null);
-      }, 5000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [mutationError, queryError]);
-
-  useEffect(() => {
-    if (orgUnits?.organisationUnits) {
-      setCountries(orgUnits?.organisationUnits);
-    }
-  }, [orgUnits]);
 
   return (
     <Card
-      title='GLOBAL HEALTH OBSERVATORY'
+      title='GHO'
       footer={
         <div className={classes.footer}>
           <Button
@@ -161,96 +98,60 @@ export default function GHO() {
             onClick={() => {
               form.submit();
             }}
-            loading={mutationLoading || loading}
+            // loading={mutationLoading || loading}
           >
             Import
           </Button>
         </div>
       }
     >
-      {queryLoading ? (
-        <Loader />
-      ) : (
-        <>
-          {error && (
-            <Notification
-              title='Error'
-              message={error}
-              status='error'
-              onClose={() => setError(null)}
-            />
-          )}
-          {success && (
-            <Notification
-              title='Success'
-              message={success}
-              status='success'
-              onClose={() => setSuccess(null)}
-            />
-          )}
-          <Form form={form} layout='vertical' onFinish={handleImport}>
+      <Form layout='vertical' form={form} onFinish={onFinish}>
+        <Form.Item label='Country' name='country'>
+          <Select
+            showSearch
+            placeholder='Select a country'
+            optionFilterProp='children'
+            // onChange={(value, option) => {
+            //   console.log(value, option);
+            // }}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {orgUnits?.organisationUnits?.map(({ code, name }) => (
+              <Option key={code} value={code}>
+                {name}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <div className={classes.transfer}>
+          <div>
+            <p>
+              Select the data you want to download by clicking on the
+              corresponding indicators.
+            </p>
             <Form.Item
-              label='Country'
-              name='country'
+              label='Indicators'
+              name='indicators'
               rules={[
                 {
                   required: true,
-                  message: 'Please select a country',
+                  message: 'Please select at least one indicator',
                 },
               ]}
             >
-              
-              <Select
-                showSearch
-                style={{ width: 200 }}
-                placeholder='Select a country'
-                optionFilterProp='children'
-                // value={country}
-                onChange={handleChange}
-                filterOption={(input, option) =>
-                  (option?.label ?? '').includes(input)
-                }
-                filterSort={(optionA, optionB) =>
-                  (optionA?.label ?? '')
-                    .toLowerCase()
-                    .localeCompare((optionB?.label ?? '').toLowerCase())
-                }
-                options={
-                  countries?.map(({ code, name }) => ({
-                    label: name,
-                    value: code,
-                  })) ?? []
-                }
+              <Transfer
+                selected={selected}
+                onChange={({selected}) => {
+                  setSelected(selected);
+                }}
+                options={localIndicators}
               />
             </Form.Item>
-
-            <div className={classes.transfer}>
-              <div>
-                <p>
-                  Select the data you want to download by clicking on the
-                  corresponding indicators.
-                </p>
-                <Form.Item
-                  label='Indicators'
-                  name='indicators'
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please select at least one indicator',
-                    },
-                  ]}
-                >
-                  <Transfer
-                    selected={selected}
-                    onChange={onChange}
-                    options={localIndicators}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-          </Form>
-        </>
-      )}
+          </div>
+        </div>
+      </Form>
     </Card>
   );
 }
