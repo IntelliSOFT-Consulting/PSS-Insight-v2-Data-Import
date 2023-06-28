@@ -79,7 +79,7 @@ export const getYearErrors = jsonData => {
       yearErrors.push([
         `Row No. ${year?.row}`,
         `Reporting Year`,
-        'Year must be not be empty and must be in the format YYYY.',
+        'Year mus not be empty and must be in the format YYYY.',
       ]);
     });
   }
