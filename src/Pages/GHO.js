@@ -80,23 +80,23 @@ export default function GHO({ data: { orgUnits } }) {
     >
       <Form layout='vertical' form={form} onFinish={onFinish}>
         <Form.Item label='Country' name='country'>
-          <Select
+          <select
             showSearch
             placeholder='Select a country'
-            optionFilterProp='children'
+            // optionFilterProp='children'
             // onChange={(value, option) => {
             //   console.log(value, option);
             // }}
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
+            // filterOption={(input, option) =>
+            //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            // }
           >
             {orgUnits?.organisationUnits?.map(({ code, name }) => (
-              <Option key={code} value={code}>
+              <option key={code} value={code}>
                 {name}
-              </Option>
+              </option>
             ))}
-          </Select>
+          </select>
         </Form.Item>
         <div className={classes.transfer}>
           <div>

@@ -8,7 +8,6 @@ import {
   createExport,
 } from '../lib/export';
 // import { read, utils, writeFileXLSX } from 'xlsx';
-import 'handsontable/dist/handsontable.full.min.css';
 import { registerAllModules } from 'handsontable/registry';
 import { DatePicker, Form, Table } from 'antd';
 import moment from 'moment';
