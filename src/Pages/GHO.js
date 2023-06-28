@@ -3,7 +3,7 @@ import Card from '../components/Card';
 import { useDataQuery, useDataMutation } from '@dhis2/app-runtime';
 import { Form, Select, Button } from 'antd';
 import { createUseStyles } from 'react-jss';
-import { Transfer } from '@dhis2/ui';
+// import { Transfer } from '@dhis2/ui';
 import localIndicators from '../data/indicators.json';
 import { getIndicators } from '../lib/gho';
 
@@ -131,7 +131,7 @@ export default function GHO() {
               Select the data you want to download by clicking on the
               corresponding indicators.
             </p>
-            <Form.Item
+            {/* <Form.Item
               label='Indicators'
               name='indicators'
               rules={[
@@ -148,7 +148,7 @@ export default function GHO() {
                 }}
                 options={localIndicators}
               />
-            </Form.Item>
+            </Form.Item> */}
           </div>
         </div>
       </Form>
