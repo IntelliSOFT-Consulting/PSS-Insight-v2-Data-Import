@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import { Transfer, SingleSelectField, SingleSelectOption } from '@dhis2/ui';
 import { createUseStyles } from 'react-jss';
-import { Button, Form } from 'antd';
+import { Button, Form, Table, Popconfirm } from 'antd';
 import { useDataMutation } from '@dhis2/app-runtime';
 import localIndicators from '../data/indicators.json';
 import { getIndicators } from '../lib/gho';
 import Notification from '../components/Notification';
+import { set } from 'date-fns';
 
 const useStyles = createUseStyles({
   transfer: {
@@ -20,6 +21,12 @@ const useStyles = createUseStyles({
     },
     '& div.highlighted': {
       background: '#bb0c2f !important',
+    },
+    '& .dhis2-uicore-transfer': {
+      '& div[data-test="dhis2-uicore-transfer-leftside"], div[data-test="dhis2-uicore-transfer-right"]':
+        {
+          width: 'calc(50% - 16%) !important',
+        },
     },
   },
   footer: {
@@ -40,6 +47,7 @@ export default function GHO({ data: { orgUnits } }) {
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [importedData, setImportedData] = useState([]);
 
   const classes = useStyles();
   const [form] = Form.useForm();
@@ -100,6 +108,7 @@ export default function GHO({ data: { orgUnits } }) {
       });
 
       const payload = formattedData.flat();
+      setImportedData(payload);
       await mutate(payload);
       setLoading(false);
     } catch (error) {
@@ -126,20 +135,57 @@ export default function GHO({ data: { orgUnits } }) {
     }
   }, [orgUnits]);
 
+  const columns = [
+    {
+      title: 'Indicator',
+      dataIndex: 'dataElement',
+      key: 'dataElement',
+      render: dataElement => {
+        return (
+          localIndicators.find(({ id }) => id === dataElement)?.label || ''
+        );
+      },
+    },
+    {
+      title: 'Country',
+      dataIndex: 'orgUnit',
+      key: 'orgUnit',
+      render: orgUnit => {
+        return (
+          orgUnits?.organisationUnits?.find(({ id }) => id === orgUnit)?.name ||
+          ''
+        );
+      },
+    },
+    {
+      title: 'Period',
+      dataIndex: 'period',
+      key: 'period',
+    },
+    {
+      title: 'Value',
+      dataIndex: 'value',
+      key: 'value',
+    },
+  ];
+
   return (
     <Card
       title='GLOBAL HEALTH OBSERVATORY'
       footer={
         <div className={classes.footer}>
-          <Button
-            type='primary'
-            onClick={() => {
+          <Popconfirm
+            title='This action will overwrite existing data. Do you want to continue?'
+            onConfirm={() => {
               form.submit();
             }}
-            loading={mutationLoading || loading}
+            okText='Yes'
+            cancelText='No'
           >
-            Import
-          </Button>
+            <Button type='primary' loading={mutationLoading || loading}>
+              Import
+            </Button>
+          </Popconfirm>
         </div>
       }
     >
@@ -223,6 +269,15 @@ export default function GHO({ data: { orgUnits } }) {
           </Form>
         </>
       }
+      {importedData?.length > 0 && (
+        <Table
+          bordered
+          columns={columns}
+          dataSource={importedData}
+          pagination={false}
+          size='small'
+        />
+      )}
     </Card>
   );
 }
