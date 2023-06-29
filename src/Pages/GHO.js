@@ -53,6 +53,7 @@ export default function GHO({ data: { orgUnits } }) {
   const [selected, setSelected] = useState([]);
   const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState(null);
+  const [selecttedCountry, setSelectedCountry] = useState(null);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -91,7 +92,7 @@ export default function GHO({ data: { orgUnits } }) {
     const indicator = localIndicators.find(({ value: v }) => v === value);
     return indicator?.id;
   };
-
+  console.log('Country: ', country);
   const handleImport = async values => {
     try {
       setLoading(true);
@@ -117,6 +118,11 @@ export default function GHO({ data: { orgUnits } }) {
       });
 
       const payload = formattedData.flat();
+      setSelectedCountry(
+        orgUnits?.organisationUnits?.find(
+          ({ code }) => code === values.country.selected
+        )?.name
+      );
       setImportedData(payload);
       await mutate(payload);
       setLoading(false);
@@ -159,11 +165,8 @@ export default function GHO({ data: { orgUnits } }) {
       title: 'Country',
       dataIndex: 'orgUnit',
       key: 'orgUnit',
-      render: orgUnit => {
-        return (
-          orgUnits?.organisationUnits?.find(({ id }) => id === orgUnit)?.name ||
-          ''
-        );
+      render: _orgUnit => {
+        return selecttedCountry;
       },
     },
     {
