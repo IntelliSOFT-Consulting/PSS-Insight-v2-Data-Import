@@ -7,7 +7,6 @@ import { useDataMutation } from '@dhis2/app-runtime';
 import localIndicators from '../data/indicators.json';
 import { getIndicators } from '../lib/gho';
 import Notification from '../components/Notification';
-import { set } from 'date-fns';
 
 const useStyles = createUseStyles({
   transfer: {
@@ -37,6 +36,16 @@ const useStyles = createUseStyles({
   select: {
     marginBottom: 10,
     width: '30rem',
+  },
+  table: {
+    '& .ant-table-thead': {
+      '& tr': {
+        '& th': {
+          backgroundColor: '#012f6c !important',
+          color: 'white',
+        },
+      },
+    },
   },
 });
 
@@ -276,6 +285,8 @@ export default function GHO({ data: { orgUnits } }) {
           dataSource={importedData}
           pagination={false}
           size='small'
+          style={{ marginBottom: '5rem' }}
+          className={classes.table}
         />
       )}
     </Card>
