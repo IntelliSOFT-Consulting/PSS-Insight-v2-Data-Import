@@ -16,10 +16,7 @@ export const createPayload = (jsonData, dataElements, orgUnit, programs) => {
       }
     }
     payload.push({
-      occurredAt: format(
-        new Date(`${row.reportingYear.response}-01-01`),
-        'yyyy-MM-dd'
-      ),
+      occurredAt: `${row.reportingYear.response}-01-01T00:00:00.000`,
       status: 'COMPLETED',
       notes: [],
       completedAt: format(new Date(), 'yyyy-MM-dd'),

@@ -64,7 +64,12 @@ export default function Template({ data }) {
               setLoading(true);
               const template = generateTemplate(
                 data.indicators.indicators,
-                data.dataElements.dataElements,
+                data.dataElements.dataElements?.filter(
+                  item =>
+                    !item.displayName?.includes('Comment') &&
+                    !item.displayName?.includes('_Upload') &&
+                    !item.code?.includes('Benchmark')
+                ),
                 data.me.organisationUnits
               );
               const element = document.createElement('a');

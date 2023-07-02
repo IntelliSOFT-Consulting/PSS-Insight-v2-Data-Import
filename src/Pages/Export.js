@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDataQuery } from '@dhis2/app-runtime';
-import {
-  formatColumns,
-  formatDataElements,
-  createExport,
-} from '../lib/export';
-import { DatePicker, Form, Table, Button } from 'antd';
+import { formatColumns, formatDataElements, createExport } from '../lib/export';
+import { DatePicker, Form, Table, Button, Empty } from 'antd';
 import moment from 'moment';
 import CardItem from '../components/Card';
 import { createUseStyles } from 'react-jss';
@@ -72,7 +68,6 @@ const useStyles = createUseStyles({
     overflow: 'auto',
   },
 });
-
 
 export default function Export({
   data: { dataElements, indicators, me, programs },
@@ -294,6 +289,12 @@ export default function Export({
               columns={columns}
               pagination={data.length > 20 ? { pageSize: 20 } : false}
               size='small'
+            />
+          )}
+          {!data && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description='No data to display'
             />
           )}
         </div>

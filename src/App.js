@@ -39,11 +39,11 @@ const query = {
     }),
   },
   dataElements: {
-    resource: 'dataElements.json',
+    resource: 'dataElements',
     params: ({ page }) => ({
       order: 'code:asc, formName:asc, valueType:asc, id:asc',
       fields: 'id,code,formName,valueType,displayName',
-      pageSize: 5000,
+      pageSize: 10000,
     }),
   },
   programs: {

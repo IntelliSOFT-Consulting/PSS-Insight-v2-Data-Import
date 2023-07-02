@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
-import { Upload, Button } from 'antd';
+import { Upload, Button, Popconfirm } from 'antd';
 import { createUseStyles } from 'react-jss';
 import Sheet from 'sheet-happens';
 import { read, utils } from 'xlsx';
 import Notification from '../components/Notification';
 import { dataToJson, getErrors } from '../lib/validate';
 import { createPayload } from '../lib/payload';
-import { useDataMutation } from '@dhis2/app-runtime';
+import { useDataMutation, useDataQuery } from '@dhis2/app-runtime';
 import Loader from '../components/Loader';
 
 const useStyles = createUseStyles({
@@ -59,6 +59,24 @@ export default function UploadTemplate({
     setFile(file);
     onSuccess('ok');
   };
+
+  // get the past events for the current org unit and program
+  const {
+    loading: loadingEvents,
+    error: errorEvents,
+    data: dataEvents,
+    refetch: refetchEvents,
+  } = useDataQuery({
+    events: {
+      resource: 'tracker/events',
+      params: ({ page }) => ({
+        program: programs.programs[0].id,
+        orgUnit: me.organisationUnits[0].id,
+        pageSize: 10000,
+        fields: 'id,dataValues,occurredAt,event',
+      }),
+    },
+  });
 
   useEffect(() => {
     if (file) {
@@ -118,6 +136,7 @@ export default function UploadTemplate({
         onClose: () => setAlert(null),
       });
     } else {
+      refetchEvents();
       setAlert({
         status: 'success',
         message: 'No errors found in the template.',
@@ -160,6 +179,7 @@ export default function UploadTemplate({
     type: 'create',
     params: _data => ({
       async: 'false',
+      importStrategy: 'CREATE_AND_UPDATE',
     }),
 
     data: _data => {
@@ -200,7 +220,17 @@ export default function UploadTemplate({
       programs?.programs
     );
 
-    mutate(payload);
+    const updatedEventsWithId = payload.map(item => {
+      const event = dataEvents?.events?.instances?.find(
+        event => event.occurredAt === item.occurredAt
+      );
+      if (event) {
+        return { ...item, event: event.event };
+      }
+      return item;
+    });
+
+    mutate(updatedEventsWithId);
   };
 
   const footer = (
@@ -215,14 +245,17 @@ export default function UploadTemplate({
       >
         Validate
       </Button>
-      <Button
-        type='primary'
+      <Popconfirm
+        title='If you proceed, the existing data for the same reporting year will be replaced. Are you certain you want to continue?'
+        onConfirm={handleSubmit}
+        okText='Yes'
+        cancelText='No'
         disabled={!valid}
-        className={classes.button}
-        onClick={handleSubmit}
       >
-        Submit
-      </Button>
+        <Button type='primary' disabled={!valid} className={classes.button}>
+          Submit
+        </Button>
+      </Popconfirm>
     </div>
   );
   return (

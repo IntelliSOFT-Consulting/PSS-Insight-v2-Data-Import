@@ -9,6 +9,13 @@ import { getIndicators } from '../lib/gho';
 import Notification from '../components/Notification';
 
 const useStyles = createUseStyles({
+  '@global': {
+    '.dhis2-uicore-transfer': {
+      '& div.jsx-3958825765': {
+        width: 'calc(50% - 16%) !important',
+      },
+    },
+  },
   transfer: {
     '& button.icon-only': {
       background: '#012f6c !important',
@@ -20,12 +27,6 @@ const useStyles = createUseStyles({
     },
     '& div.highlighted': {
       background: '#bb0c2f !important',
-    },
-    '& .dhis2-uicore-transfer': {
-      '& div[data-test="dhis2-uicore-transfer-leftside"], div[data-test="dhis2-uicore-transfer-right"]':
-        {
-          width: 'calc(50% - 16%) !important',
-        },
     },
   },
   footer: {
@@ -246,7 +247,7 @@ export default function GHO({ data: { orgUnits } }) {
               </SingleSelectField>
             </Form.Item>
 
-            <div className={classes.transfer}>
+            <div className={`${classes.root} ${classes.transfer}`}>
               <div>
                 <p>
                   Select the data you want to download by clicking on the
