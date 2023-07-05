@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useDataQuery } from '@dhis2/app-runtime';
+import { useDataQuery, useDataEngine } from '@dhis2/app-runtime';
 import { formatColumns, formatDataElements, createExport } from '../lib/export';
 import { DatePicker, Form, Table, Button, Empty } from 'antd';
 import moment from 'moment';
@@ -77,6 +77,34 @@ export default function Export({
   const [headers, setHeaders] = useState(null);
   const [loading, setLoading] = useState(false);
   const [period, setPeriod] = useState(null);
+  const [benchmarks, setBenchmarks] = useState([]);
+  const [filteredElements, setFilteredElements] = useState([]);
+  const [filteredIndicators, setFilteredIndicators] = useState([]);
+
+  useEffect(() => {
+    if (dataElements && indicators) {
+      const filtered = dataElements?.dataElements?.filter(
+        element =>
+          !element?.code?.includes('Benchmark') &&
+          !element?.code?.includes('Comment') &&
+          !element?.code?.includes('Upload')
+      );
+
+      const filteredInd = indicators?.indicators?.filter(
+        indicator =>
+          !indicator?.code?.includes('Benchmark') &&
+          !indicator?.code?.includes('Comment') &&
+          !indicator?.code?.includes('Upload')
+      );
+
+      console.log('filteredInd: ', filtered);
+
+      setFilteredIndicators(filteredInd);
+      setFilteredElements(filtered);
+    }
+  }, [dataElements, indicators]);
+
+  const engine = useDataEngine();
 
   const classes = useStyles();
 
@@ -95,6 +123,67 @@ export default function Export({
 
   const { loading: loadingData, error, data: eventData } = useDataQuery(query);
 
+  const queryBenchmarks = async () => {
+    // get dataSets
+    const { data } = await engine.query({
+      data: {
+        resource: 'dataSets',
+        params: {
+          fields: 'id,name',
+          paging: false,
+          filter: 'name:ilike:Benchmark',
+        },
+      },
+    });
+
+    const { data: benchmarkElements } = await engine.query({
+      data: {
+        resource: 'dataElements',
+        params: {
+          fields: 'id,name,displayName',
+          paging: false,
+          filter: 'name:like:Benchmark',
+        },
+      },
+    });
+
+    if (
+      data?.dataSets?.length > 0 &&
+      benchmarkElements?.dataElements?.length > 0
+    ) {
+      const dataSetId = data?.dataSets[0]?.id;
+      const { data: dataValues } = await engine.query({
+        data: {
+          resource: 'dataValueSets',
+          params: {
+            orgUnit: me?.organisationUnits[0]?.id,
+            period: new Date().getFullYear() - 1,
+            dataSet: dataSetId,
+            paging: false,
+            fields: 'dataElement,value,displayName',
+          },
+        },
+      });
+      const benchmarkData = benchmarkElements?.dataElements?.map(element => {
+        const dataValue = dataValues?.dataValues?.find(
+          value => value.dataElement === element.id
+        );
+        return {
+          id: element.id,
+          name: element.displayName?.replace('Benchmark', '')?.replace('_', ''),
+          value: dataValue?.value || 0,
+        };
+      });
+      setBenchmarks(benchmarkData);
+      return benchmarkData;
+    }
+    return [];
+  };
+
+  useEffect(() => {
+    queryBenchmarks();
+  }, []);
+
   useEffect(() => {
     if (eventData && dataElements && period) {
       const selectedEvents = eventData?.events?.instances?.filter(event => {
@@ -106,9 +195,10 @@ export default function Export({
       setFilteredData(selectedEvents);
 
       const formattedDataElements = formatDataElements(
-        indicators?.indicators,
-        dataElements?.dataElements,
-        selectedEvents
+        filteredIndicators,
+        filteredElements,
+        selectedEvents,
+        benchmarks
       );
 
       setData(formattedDataElements?.data);
@@ -132,9 +222,10 @@ export default function Export({
     // create sheet using headers and data and xlsx
     if (filteredData && indicators && dataElements) {
       const exportPayload = createExport(
-        indicators?.indicators,
-        dataElements?.dataElements,
-        filteredData
+        filteredIndicators,
+        filteredElements,
+        filteredData,
+        benchmarks
       );
 
       const cols = exportPayload[0];
@@ -235,10 +326,7 @@ export default function Export({
     }
   };
 
-  const columns = formatColumns(
-    indicators?.indicators,
-    dataElements?.dataElements
-  );
+  const columns = formatColumns(filteredIndicators, filteredElements);
 
   const header = (
     <div className={classes.exportHeader}>

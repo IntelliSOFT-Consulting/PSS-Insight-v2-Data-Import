@@ -20,7 +20,7 @@ function generateExcelColumns(arrLength) {
   return columns;
 }
 
-const generateTemplate = (indicators, dataElements, orgUnits) => {
+const generateTemplate = (indicators, dataElements, orgUnits, benchmarks) => {
   const groupedData = {};
   for (const indicator of indicators) {
     groupedData[indicator?.code] = dataElements?.filter(

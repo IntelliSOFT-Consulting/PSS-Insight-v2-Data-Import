@@ -1,5 +1,6 @@
 const groupData = (indicators, dataElements) => {
   const groupedData = {};
+
   for (const indicator of indicators) {
     groupedData[indicator?.code] = dataElements?.filter(
       element =>
@@ -12,7 +13,12 @@ const groupData = (indicators, dataElements) => {
   return groupedData;
 };
 
-export const formatDataElements = (indicators, dataElements, events) => {
+export const formatDataElements = (
+  indicators,
+  dataElements,
+  events,
+  benchmarks
+) => {
   const header1 = [''];
   const header2 = ['Reporting Year'];
   const header3 = [''];
@@ -38,7 +44,6 @@ export const formatDataElements = (indicators, dataElements, events) => {
       const index = headersText.indexOf(dataValue.dataElement);
 
       const dataItem = flatHeaders[index];
-
       if (index > -1) {
         dataValues[dataItem?.code] =
           dataValue.value === 'true'
@@ -47,7 +52,9 @@ export const formatDataElements = (indicators, dataElements, events) => {
             ? 'No'
             : dataValue.value;
 
-        dataValues[`${dataItem?.code} National Benchmark`] = null;
+        dataValues[`${dataItem?.code} National Benchmark`] =
+          benchmarks?.find(benchmark => benchmark.name === dataItem?.code)
+            ?.value || 0;
         dataValues[`${dataItem?.code} International Benchmark`] = null;
       }
     }
@@ -106,7 +113,7 @@ export const formatColumns = (indicators, dataElements) => {
   return columns;
 };
 
-export const createExport = (indicators, dataElements, events) => {
+export const createExport = (indicators, dataElements, events, benchmarks) => {
   try {
     const header1 = [
       {
@@ -120,7 +127,7 @@ export const createExport = (indicators, dataElements, events) => {
     const header3 = [''];
 
     const data = [];
-    const groupedData = groupData(indicators, dataElements);
+    const groupedData = groupData(indicators, dataElements, benchmarks);
 
     const headers = Object.values(groupedData).flat();
 

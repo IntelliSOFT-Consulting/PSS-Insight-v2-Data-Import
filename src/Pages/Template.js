@@ -4,6 +4,7 @@ import instructions from '../data/instructions.json';
 import { createUseStyles } from 'react-jss';
 import generateTemplate from '../lib/genarateTemplate';
 import { Button } from 'antd';
+import { useDataEngine } from '@dhis2/app-runtime';
 
 const useStyles = createUseStyles({
   title: {
@@ -44,6 +45,9 @@ export default function Template({ data }) {
   const classes = useStyles();
   const [loading, setLoading] = useState(false);
 
+
+  
+
   return (
     <Card title='DOWNLOAD DATA IMPORT TEMPLATE'>
       <div className={classes.title}>Instructions:</div>
@@ -70,7 +74,7 @@ export default function Template({ data }) {
                     !item.displayName?.includes('_Upload') &&
                     !item.code?.includes('Benchmark')
                 ),
-                data.me.organisationUnits
+                data.me.organisationUnits,
               );
               const element = document.createElement('a');
 
