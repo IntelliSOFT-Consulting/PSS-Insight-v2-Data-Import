@@ -114,7 +114,7 @@ export default function Export({
       params: ({ page }) => ({
         program: programs.programs[0].id,
         orgUnit: me.organisationUnits[0].id,
-        pagination: false,
+        pageSize: 20000,
         fields:
           'dataValues,occurredAt,event,status,orgUnit,program,updatedAt,createdAt,assignedUser,completedAt,completedBy,trackedEntityInstance,trackedEntityType',
       }),

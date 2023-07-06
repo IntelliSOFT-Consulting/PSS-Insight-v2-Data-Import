@@ -287,7 +287,7 @@ export default function GHO({ data: { orgUnits } }) {
           bordered
           columns={columns}
           dataSource={importedData}
-          pagination={false}
+          pagination={importedData?.length > 25 ? { pageSize: 25 } : false}
           size='small'
           style={{ marginBottom: '5rem' }}
           className={classes.table}
