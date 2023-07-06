@@ -31,7 +31,7 @@ export const formatDataElements = (
     for (const element of header) {
       header1.push({ label: element.displayName, colspan: 3 });
       header2.push({ label: element.code, colspan: 3 });
-      header3.push('value', 'National Benchmark', 'International Benchmark');
+      header3.push('value', 'National Target', 'International Benchmark');
     }
   }
 
@@ -52,7 +52,7 @@ export const formatDataElements = (
             ? 'No'
             : dataValue.value;
 
-        dataValues[`${dataItem?.code} National Benchmark`] =
+        dataValues[`${dataItem?.code} National Target`] =
           benchmarks?.find(benchmark => benchmark.name === dataItem?.code)
             ?.value || 0;
         dataValues[`${dataItem?.code} International Benchmark`] = null;
@@ -89,9 +89,9 @@ export const formatColumns = (indicators, dataElements) => {
               key: 'value',
             },
             {
-              title: 'National Benchmark',
-              dataIndex: `${header.code} National Benchmark`,
-              key: `${header.code} National Benchmark`,
+              title: 'National Target',
+              dataIndex: `${header.code} National Target`,
+              key: `${header.code} National Target`,
             },
             {
               title: 'International Benchmark',
@@ -153,7 +153,7 @@ export const createExport = (indicators, dataElements, events, benchmarks) => {
         },
       ]);
       header2.push([element.code, '', '']);
-      header3.push('value', 'National Benchmark', 'International Benchmark');
+      header3.push('value', 'National Target', 'International Benchmark');
     }
 
     const flatHeaders = headers.flat();
