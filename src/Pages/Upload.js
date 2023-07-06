@@ -196,7 +196,6 @@ export default function UploadTemplate({
           message: `Successfully imported ${created} events and updated ${updated} events. ${ignored} events were ignored.`,
           onClose: () => setAlert(null),
         });
-        console.log('_data', _data);
         setData(null);
         setErrors([['Row No.', 'Column', 'Error']]);
         setFile(null);

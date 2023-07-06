@@ -97,8 +97,6 @@ export default function Export({
           !indicator?.code?.includes('Upload')
       );
 
-      console.log('filteredInd: ', filtered);
-
       setFilteredIndicators(filteredInd);
       setFilteredElements(filtered);
     }
