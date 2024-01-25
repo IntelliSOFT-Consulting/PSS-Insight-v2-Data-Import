@@ -201,6 +201,11 @@ export default function UploadTemplate({
         setFile(null);
         setJsonDatas(null);
         setValid(false);
+
+        const timer = setTimeout(() => {
+          setAlert(null);
+        }, 2000);
+        return () => clearTimeout(timer);
       },
       onError: error => {
         setAlert({
