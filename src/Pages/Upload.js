@@ -193,7 +193,7 @@ export default function UploadTemplate({
         const { created, updated, ignored } = _data.stats;
         setAlert({
           status: 'success',
-          message: `Successfully imported ${created} events and updated ${updated} events. ${ignored} events were ignored.`,
+          message: `Successfully imported ${created} event(s), Updated ${updated} event(s), Ignored ${ignored} event(s)`,
           onClose: () => setAlert(null),
         });
         setData(null);
