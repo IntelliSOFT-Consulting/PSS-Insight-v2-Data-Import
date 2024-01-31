@@ -1,8 +1,12 @@
 import axios from "axios";
 import delay from "./delay";
 
+// remove paths from the url
+let url = new URL(process.env.REACT_APP_SERVER_URL);
+let newUrl = url.protocol && url.host ? `${url.protocol}//${url.host}` : window.location.origin;
+
 const gho = axios.create({
-  baseURL: `${process.env.REACT_APP_SERVER_URL}/api/v1/redirect/`,
+  baseURL: `${newUrl}/api/v1/redirect/`,
   headers: { "Content-Type": "application/json" },
 });
 export const getIndicators = async (indicators, countryCode) => {
